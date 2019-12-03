@@ -93,6 +93,27 @@ THREAD_TASK_NOSHUFFLE(void *param) {
                     JOINFUNCTION,
                     chainedbuf, args->timer);//build and probe at the same time.
         }
+        // TODO: add new fetcher, shuffler, joiner here, to construct a multi-source join.
+        // need to implement a queue for downstream joins.
+        moodycamel::ConcurrentQueue<fetch_t *> queueR;
+        moodycamel::ConcurrentQueue<fetch_t *> queueS;
+        // TODO: fetch another stream source, enqueue both of them,
+        // TODO: use shuffler to send tuple to joiner
+//        queue.enqueue(join_result);
+
+//         if (result != nullptr) {
+//             // invoke another joiner
+//             fetch_t *fetch = fetcher->next_tuple(args->tid);
+//             args->results = args->joiner->join(
+//                     args->tid,
+//                     fetch->tuple,
+//                     fetch->flag,
+//                     args->htR,
+//                     args->htS,
+//                     &matches,
+//                     JOINFUNCTION,
+//                     chainedbuf, args->timer);//build and probe at the same time.
+//         }
     } while (!fetcher->finish(args->tid));
     printf("args->num_results (%d): %ld\n", args->tid, args->results);
 

@@ -131,6 +131,8 @@ SHJ_JM_P(relation_t *relR, relation_t *relS, int nthreads) {
 }
 result_t *
 SHJ_JM_NP(relation_t *relR, relation_t *relS, int nthreads) {
+    // TODO: fetcher has a lot of things needed to update
+    // 1. add mew fetcher parameter
     t_param param(nthreads);
 #ifndef NO_TIMING
     T_TIMER timer;

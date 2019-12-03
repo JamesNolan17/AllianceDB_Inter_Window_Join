@@ -8,6 +8,7 @@
 #include "../utils/types.h"
 #include <stdio.h>
 
+
 struct fetch_t {
     fetch_t(fetch_t *fetch);
 

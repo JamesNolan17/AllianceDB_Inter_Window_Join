@@ -113,4 +113,35 @@ fetch_t *HS_NP_Fetcher::next_tuple(int tid) {
     }
 }
 
+/**
+ * Downstream fetcher in a single thread task
+ * @param state
+ * @param relR
+ * @param relS
+ * @return
+ */
+fetch_t *_next_tuple_DS(t_state *state, relation_t *relR, relation_t *relS) {
+    // TODO: add dequeue logic here
+//    if (state->flag) {
+//        if (dequeue != nullptr) {
+//            state->fetch.tuple = ;
+//            state->fetch.flag = state->flag;
+//            (state->flag) ^= true;//flip flag
+//            return &(state->fetch);
+//        } else {
+//            (state->flag) ^= true;//flip flag
+//            return nullptr;
+//        }
+//    } else {
+//        if (dequeue != nullptr) {
+//            state->fetch.tuple = ;
+//            state->fetch.flag = state->flag;
+//            (state->flag) ^= true;//flip flag
+//            return &(state->fetch);
+//        } else {
+//            state->flag ^= true;//flip flag
+//            return nullptr;
+//        }
+//    }
+}
 
