@@ -9,6 +9,7 @@
 #include <list>
 #include <mutex>
 #include "npj_types.h"
+#include "../helper/shuffler.h"
 
 #ifndef PTHREAD_BARRIER_SERIAL_THREAD
 #define PTHREAD_BARRIER_SERIAL_THREAD 1
@@ -149,7 +150,8 @@ int64_t proble_hashtable_single(const hashtable_t *ht, const relation_t *rel, ui
                                 void *(*thread_fun)(const tuple_t*, const tuple_t*, int64_t*));
 
 
-void match_single_tuple(const std::list<intkey_t> list, const relation_t *rel, const tuple_t *tuple, int64_t *matches, void *(*thread_fun)(const tuple_t*, const tuple_t*, int64_t*));
+void match_single_tuple(const std::list<intkey_t> list, const relation_t *rel, const tuple_t *tuple, int64_t *matches,
+        void *(*thread_fun)(const tuple_t*, const tuple_t*, int64_t*));
 
 uint32_t find_index(const relation_t *rel, const tuple_t *tuple);
 

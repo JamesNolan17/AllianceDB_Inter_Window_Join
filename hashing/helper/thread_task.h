@@ -67,4 +67,15 @@ void
 void *
 shj_thread_jb_np(void *param);
 
+/**
+ * Just a wrapper to call the _shj_st Handshake
+ *
+ * @param param the parameters of the thread, i.e. tid, ht, reln, ...
+ *
+ * @return
+ */
+void
+*QUERY5_JOIN_TASK(void *param);
+
+
 #endif //ALLIANCEDB_THREAD_TASK_H

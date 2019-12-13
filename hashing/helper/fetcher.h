@@ -39,13 +39,18 @@ public:
     relation_t *relR;//input relation
     relation_t *relS;//input relation
 
+    relation_payload_t *relPlR;//input relation
+    relation_payload_t *relPlS;//input relation
+
     t_state *state;
 
     virtual bool finish(int32_t tid) = 0;
 
-    baseFetcher(relation_t *relR, relation_t *relS) {
+    baseFetcher(relation_t *relR, relation_t *relS, relation_payload_t *relPlR, relation_payload_t *relPlS) {
         this->relR = relR;
         this->relS = relS;
+        this->relPlR = relPlR;
+        this->relPlS = relPlS;
     }
 };
 
@@ -67,8 +72,8 @@ public:
      * @param relR
      * @param relS
      */
-    HS_NP_Fetcher(int nthreads, relation_t *relR, relation_t *relS)
-            : baseFetcher(relR, relS) {
+    HS_NP_Fetcher(int nthreads, relation_t *relR, relation_t *relS, relation_payload_t *relPlR, relation_payload_t *relPlS)
+            : baseFetcher(relR, relS, relPlR, relPlS) {
         state = new t_state[nthreads];
 
         int i;
@@ -112,8 +117,8 @@ public:
      * @param relR
      * @param relS
      */
-    JM_P_Fetcher(int nthreads, relation_t *relR, relation_t *relS)
-            : baseFetcher(relR, relS) {
+    JM_P_Fetcher(int nthreads, relation_t *relR, relation_t *relS, relation_payload_t *relPlR, relation_payload_t *relPlS)
+            : baseFetcher(relR, relS, relPlR, relPlS) {
         state = new t_state[nthreads];
 
         int numSthr = relS->num_tuples / nthreads;//replicate R, partition S.
@@ -150,8 +155,8 @@ public:
      * @param relR
      * @param relS
      */
-    JM_NP_Fetcher(int nthreads, relation_t *relR, relation_t *relS)
-            : baseFetcher(relR, relS) {
+    JM_NP_Fetcher(int nthreads, relation_t *relR, relation_t *relS, relation_payload_t *relPlR, relation_payload_t *relPlS)
+            : baseFetcher(relR, relS, relPlR, relPlS) {
         state = new t_state[nthreads];
 
         int numSthr = relS->num_tuples / nthreads;//replicate R, partition S.
@@ -182,8 +187,8 @@ public:
                && state[tid].start_index_S == state[tid].end_index_S;
     }
 
-     JB_NP_Fetcher(int nthreads, relation_t *relR, relation_t *relS)
-            : baseFetcher(relR, relS) {
+     JB_NP_Fetcher(int nthreads, relation_t *relR, relation_t *relS, relation_payload_t *relPlR, relation_payload_t *relPlS)
+            : baseFetcher(relR, relS, relPlR, relPlS) {
         state = new t_state[nthreads];
         int numRthr = relR->num_tuples / nthreads;// partition R,
         int numSthr = relS->num_tuples / nthreads;// partition S.

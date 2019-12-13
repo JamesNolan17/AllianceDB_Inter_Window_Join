@@ -27,9 +27,15 @@
 
 void launch(int nthreads, t_param param, T_TIMER *timer, void *(*thread_fun)(void *));
 
+void launch_query(int nthreads, t_query_param param, T_TIMER *timer, void *(*thread_fun)(void *));
+
 #ifndef LAUNCH
 #define LAUNCH(nthreads, param, timer, thread_fun) \
         launch(nthreads, param, &timer,thread_fun);
+
+#define LAUNCH_QUERY(nthreads, param, timer, thread_fun) \
+        launch_query(nthreads, param, &timer,thread_fun);
 #endif
+
 
 #endif //ALLIANCEDB_LAUNCHER_H

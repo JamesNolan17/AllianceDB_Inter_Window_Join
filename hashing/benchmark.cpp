@@ -173,17 +173,17 @@ query5(const param_t cmd_params) {
     int r_size = 5;
 
     // In this part, I think at beginning, all table will have a initial keyby,
-    // then join with corresponding table with the specified key.
-    // TODO: should have a method to re-keyby the relation, i.e. change the key in the relation.
-    // Psudo Code:
-    // relation1 = load_relation(file, keyby=0) # relation1: a1, a2, a3
-    // relation2 = load_relation(file, keyby=0) # relation2: b1, a1, b2, b3
-    // relation3 = load_relation(file, keyby=0) # relation3: c1, b1, c2, c3
-    // relation2 = relation2.keyby(1)
-    // relation1, relation2 = join(relation1, relation2)
-    // relation3.keyby(1)
-    // relation2, relation3 = join(relation2, relation3)
-    // final joined tuples in relation2 is the actual final results for join, use this to do aggregation.
+    //    // then join with corresponding table with the specified key.
+    //    // TODO: should have a method to re-keyby the relation, i.e. change the key in the relation.
+    //    // Psudo Code:
+    //    // relation1 = load_relation(file, keyby=0) # relation1: a1, a2, a3
+    //    // relation2 = load_relation(file, keyby=0) # relation2: b1, a1, b2, b3
+    //    // relation3 = load_relation(file, keyby=0) # relation3: c1, b1, c2, c3
+    //    // relation2 = relation2.keyby(1)
+    //    // relation1, relation2 = join(relation1, relation2)
+    //    // relation3.keyby(1)
+    //    // relation2, relation3 = join(relation2, relation3)
+    //    // final joined tuples in relation2 is the actual final results for join, use this to do aggregation.
 
 //    // c_custkey = o_custkey
 //    results = join_from_file(cmd_params, customer_file, orders_file, 0, 1, c_size, o_size);
@@ -199,17 +199,15 @@ query5(const param_t cmd_params) {
 //    results = join_from_file(cmd_params, nation_file, region_file, 2, 0, n_size, r_size);
 
     createRelation(&relC, &relPlC, 0, cmd_params, customer_file, c_size, cmd_params.r_seed);
-    DEBUGMSG("relR [aligned:%d]: %s", is_aligned(relC.tuples, CACHE_LINE_SIZE),
-             print_relation(relC.tuples, cmd_params.r_size).c_str())
-
-    createRelation(&relO, &relPlO, 1, cmd_params, customer_file, o_size, cmd_params.r_seed);
-    DEBUGMSG("relR [aligned:%d]: %s", is_aligned(relC.tuples, CACHE_LINE_SIZE),
-             print_relation(relC.tuples, cmd_params.r_size).c_str())
-
+    createRelation(&relO, &relPlO, 1, cmd_params, orders_file, o_size, cmd_params.r_seed);
     createRelation(&relL, &relPlL, 1, cmd_params, lineitem_file, l_zise, cmd_params.r_seed);
-    DEBUGMSG("relR [aligned:%d]: %s", is_aligned(relC.tuples, CACHE_LINE_SIZE),
-             print_relation(relC.tuples, cmd_params.r_size).c_str())
+    createRelation(&relS, &relPlS, 1, cmd_params, supplier_file, s_size, cmd_params.r_seed);
+    createRelation(&relN, &relPlN, 1, cmd_params, nation_file, n_size, cmd_params.r_seed);
+    createRelation(&relR, &relPlR, 1, cmd_params, region_file, r_size, cmd_params.r_seed);
+
+
 
      // TODO: add a new method to deal with multi-source join
-//    results = cmd_params.algo->joinAlgo(&relC, &relO, &relL, cmd_params.nthreads);
+    results = (*QUERY5)(&relC, &relO, &relL, &relPlC, &relPlO, &relPlL, cmd_params.nthreads);
+
 }

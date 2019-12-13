@@ -10,6 +10,29 @@
 #include "shuffler.h"
 #include "../utils/perf_counters.h"
 #include "boost/stacktrace.hpp"
+//#include "../utils/generator.cpp"
+#include <string.h>             /* memcpy() */
+#include <stdio.h>              /* perror */
+#include <iostream>
+#include <sstream>
+#include <vector>
+using namespace std;
+
+// for string delimiter
+vector<string> split (string s, string delimiter) {
+    size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+    string token;
+    vector<string> res;
+
+    while ((pos_end = s.find (delimiter, pos_start)) != string::npos) {
+        token = s.substr (pos_start, pos_end - pos_start);
+        pos_start = pos_end + delim_len;
+        res.push_back (token);
+    }
+
+    res.push_back (s.substr (pos_start));
+    return res;
+}
 
 /**
  * a JOIN function that a joiner should apply
@@ -84,36 +107,15 @@ THREAD_TASK_NOSHUFFLE(void *param) {
 
         if (fetch != nullptr) {
             args->results = args->joiner->join(
-                    args->tid,
-                    fetch->tuple,
-                    fetch->flag,
-                    args->htR,
-                    args->htS,
-                    &matches,
-                    JOINFUNCTION,
+                            args->tid,
+                            fetch->tuple,
+                            fetch->flag,
+                            args->htR,
+                            args->htS,
+                            &matches,
+                            JOINFUNCTION,
                     chainedbuf, args->timer);//build and probe at the same time.
         }
-        // TODO: add new fetcher, shuffler, joiner here, to construct a multi-source join.
-        // need to implement a queue for downstream joins.
-        moodycamel::ConcurrentQueue<fetch_t *> queueR;
-        moodycamel::ConcurrentQueue<fetch_t *> queueS;
-        // TODO: fetch another stream source, enqueue both of them,
-        // TODO: use shuffler to send tuple to joiner
-//        queue.enqueue(join_result);
-
-//         if (result != nullptr) {
-//             // invoke another joiner
-//             fetch_t *fetch = fetcher->next_tuple(args->tid);
-//             args->results = args->joiner->join(
-//                     args->tid,
-//                     fetch->tuple,
-//                     fetch->flag,
-//                     args->htR,
-//                     args->htS,
-//                     &matches,
-//                     JOINFUNCTION,
-//                     chainedbuf, args->timer);//build and probe at the same time.
-//         }
     } while (!fetcher->finish(args->tid));
     printf("args->num_results (%d): %ld\n", args->tid, args->results);
 
@@ -539,6 +541,150 @@ void
 #endif
     printf("args (%d)->num_results: %ld, cntR: %d, cntS:%d\n", args->tid, args->results, cntR, cntS);
     fflush(stdout);
+}
+
+/**
+ * Just a wrapper to call the _shj_st
+ *
+ * @param param the parameters of the thread, i.e. tid, ht, reln, ...
+ *
+ * @return
+ */
+void *
+QUERY5_JOIN_TASK(void *param) {
+    query_arg_t *args = (query_arg_t *) param;
+
+    args->htR = new hashtable_t *[2];
+    args->htS = new hashtable_t *[2];
+
+#ifdef PERF_COUNTERS
+    if (args->tid == 0) {
+        PCM_initPerformanceMonitor(NULL, NULL);
+        PCM_start();
+    }
+#endif
+
+#ifndef NO_TIMING
+    /* the first thread checkpoints the start time */
+    if (args->tid == 0) {
+        START_MEASURE((*(args->timer)))
+    }
+#endif
+
+    int rv;
+#ifdef PERF_COUNTERS
+    if (args->tid == 0) {
+        PCM_stop();
+        PCM_log("========== Build phase profiling results ==========\n");
+        PCM_printResults();
+        PCM_start();
+    }
+    /* Just to make sure we get consistent performance numbers */
+    BARRIER_ARRIVE(args->barrier, rv);
+#endif
+
+#ifdef JOIN_RESULT_MATERIALIZE
+    chainedtuplebuffer_t * chainedbuf = chainedtuplebuffer_init();
+#else
+    void *chainedbuf = NULL;
+#endif
+
+    //call different data BaseFetcher.
+    baseFetcher *fetcher = args->fetcher[0];
+    int64_t matches = 0;//number of matches.
+    int64_t prev_matches = 0;
+
+    //allocate two hashtables on each thread assuming input stream statistics are known.
+    uint32_t nbucketsR = (args->fetcher[0]->relR->num_tuples / BUCKET_SIZE);
+    allocate_hashtable(&args->htR[0], nbucketsR);
+
+    uint32_t nbucketsS = (args->fetcher[0]->relS->num_tuples / BUCKET_SIZE);
+    allocate_hashtable(&args->htS[0], nbucketsS);
+
+    uint32_t nbucketsR2 = (args->fetcher[1]->relR->num_tuples / BUCKET_SIZE);
+    allocate_hashtable(&args->htR[1], nbucketsR2);
+
+    allocate_hashtable(&args->htS[1], nbucketsS);
+
+    do {
+        fetch_t *fetch = fetcher->next_tuple(args->tid);
+
+        if (fetch != nullptr) {
+            args->results = args->joiner[0]->join(
+                    args->tid,
+                    fetch->tuple,
+                    fetch->flag,
+                    args->htR[0],
+                    args->htS[0],
+                    &matches,
+                    JOINFUNCTION,
+                    chainedbuf, args->timer);//build and probe at the same time.
+        }
+        // TODO: add new fetcher, shuffler, joiner here, to construct a multi-source join.
+        // need to implement a queue for downstream joins.
+        // TODO: fetch another stream source, enqueue both of them,
+        // TODO: use shuffler to send tuple to joiner
+
+        // current tuple is matched, add to downstream queue
+        if (matches > prev_matches) {
+            // change prev_matches to current matches, need to keyby new key, and push to new queue
+            prev_matches = matches;
+            if (fetch->flag) {
+                fetch->flag = false;
+                args->shuffler[0]->push(fetch->tuple->key, fetch, false);
+            } else {
+                // keyby new key
+                table_t row = args->fetcher[0]->relPlR->rows[fetch->tuple->payload];
+                intkey_t key = stoi(split(row.value, "|")[0]);
+                fetch->tuple->key = key;
+                args->shuffler[1]->push(fetch->tuple->key, fetch, false);
+            }
+        }
+
+        // downstream fetcher need to fetch new tuple every iteration.
+        fetch = args->fetcher[1]->next_tuple(args->tid);
+        if (fetch != nullptr) {
+            args->shuffler[0]->push(fetch->tuple->key, fetch, false);
+        }
+        fetch = args->shuffler[0]->pull(args->tid, false);//re-fetch from its shuffler.
+        if (fetch != nullptr) {
+            args->results = args->joiner[1]->join(
+                    args->tid,
+                    fetch->tuple,
+                    fetch->flag,
+                    args->htR[1],
+                    args->htS[1],
+                    &matches,
+                    JOINFUNCTION,
+                    chainedbuf, args->timer);//build and probe at the same time.
+        }
+    } while (!fetcher->finish(args->tid) || !args->fetcher[1]->finish(args->tid));
+    printf("args->num_results (%d): %ld\n", args->tid, args->results);
+
+#ifdef JOIN_RESULT_MATERIALIZE
+    args->threadresult->nresults = args->num_results;
+    args->threadresult->threadid = args->tid;
+    args->threadresult->results  = (void *) chainedbuf;
+#endif
+
+#ifndef NO_TIMING
+    if (args->tid == 0) {
+        END_MEASURE((*(args->timer)))
+    }
+#endif
+
+#ifdef PERF_COUNTERS
+    if (args->tid == 0) {
+        PCM_stop();
+        PCM_log("========== Probe phase profiling results ==========\n");
+        PCM_printResults();
+        PCM_log("===================================================\n");
+        PCM_cleanup();
+    }
+    /* Just to make sure we get consistent performance numbers */
+    BARRIER_ARRIVE(args->barrier, rv);
+#endif
+    return 0;
 }
 
 

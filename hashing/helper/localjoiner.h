@@ -11,6 +11,7 @@
 #include "../joins/npj_types.h"          /* bucket_t, hashtable_t, bucket_buffer_t */
 #include "../joins/npj_params.h"         /* constant parameters */
 #include "../joins/common_functions.h"
+#include "shuffler.h"
 #include <list>
 
 ///** To keep track of the input relation pairs fitting into L2 cache */

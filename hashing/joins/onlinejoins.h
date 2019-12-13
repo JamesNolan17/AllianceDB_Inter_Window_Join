@@ -146,4 +146,8 @@ RPJ_JB_NP(relation_t *relR, relation_t *relS, int nthreads);
 result_t *
 RPJ_HS_NP(relation_t *relR, relation_t *relS, int nthreads);
 
+result_t *
+QUERY5(relation_t *relC, relation_t *relO, relation_t *relL, relation_payload_t *relPlC,
+        relation_payload_t *relPlO, relation_payload_t *relPlL, int nthreads);
+
 #endif /* NO_PARTITIONING_JOIN_H */
