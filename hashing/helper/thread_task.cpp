@@ -19,7 +19,7 @@
 using namespace std;
 
 // for string delimiter
-vector<string> split (string s, string delimiter) {
+vector<string> split_str (string s, string delimiter) {
     size_t pos_start = 0, pos_end, delim_len = delimiter.length();
     string token;
     vector<string> res;
@@ -624,40 +624,44 @@ QUERY5_JOIN_TASK(void *param) {
         // need to implement a queue for downstream joins.
         // TODO: fetch another stream source, enqueue both of them,
         // TODO: use shuffler to send tuple to joiner
+        DEBUGMSG("fetch: %d, R?%d", fetch->tuple->key, fetch->flag);
 
-        // current tuple is matched, add to downstream queue
-        if (matches > prev_matches) {
-            // change prev_matches to current matches, need to keyby new key, and push to new queue
-            prev_matches = matches;
-            if (fetch->flag) {
-                fetch->flag = false;
-                args->shuffler[0]->push(fetch->tuple->key, fetch, false);
-            } else {
-                // keyby new key
-                table_t row = args->fetcher[0]->relPlR->rows[fetch->tuple->payload];
-                intkey_t key = stoi(split(row.value, "|")[0]);
-                fetch->tuple->key = key;
-                args->shuffler[1]->push(fetch->tuple->key, fetch, false);
-            }
-        }
-
-        // downstream fetcher need to fetch new tuple every iteration.
-        fetch = args->fetcher[1]->next_tuple(args->tid);
-        if (fetch != nullptr) {
-            args->shuffler[0]->push(fetch->tuple->key, fetch, false);
-        }
-        fetch = args->shuffler[0]->pull(args->tid, false);//re-fetch from its shuffler.
-        if (fetch != nullptr) {
-            args->results = args->joiner[1]->join(
-                    args->tid,
-                    fetch->tuple,
-                    fetch->flag,
-                    args->htR[1],
-                    args->htS[1],
-                    &matches,
-                    JOINFUNCTION,
-                    chainedbuf, args->timer);//build and probe at the same time.
-        }
+//        // current tuple is matched, add to downstream queue
+//        if (matches > prev_matches) {
+//            DEBUGMSG("aaaaa0");
+//            // change prev_matches to current matches, need to keyby new key, and push to new queue
+//            prev_matches = matches;
+//            if (fetch->flag) {
+//                fetch->flag = false;
+//                args->shuffler[0]->push(fetch->tuple->key, fetch, false);
+//            } else {
+//                // keyby new key
+////                table_t row = args->fetcher[0]->relPlR->rows[fetch->tuple->payload];
+////                intkey_t key = stoi(split_str(row.value, "|")[0]);
+////                fetch->tuple->key = key;
+//                args->shuffler[1]->push(fetch->tuple->key, fetch, false);
+//            }
+//        }
+//
+//        // downstream fetcher need to fetch new tuple every iteration.
+//        fetch_t *fetch2 = args->fetcher[1]->next_tuple(args->tid);
+//        DEBUGMSG("fetch2: %d, R?%d", fetch2->tuple->key, fetch2->flag);
+//
+//        if (fetch2 != nullptr) {
+//            args->shuffler[0]->push(fetch2->tuple->key, fetch2, false);
+//        }
+//        fetch2 = args->shuffler[0]->pull(args->tid, false);//re-fetch from its shuffler.
+//        if (fetch2 != nullptr) {
+//            args->joiner[1]->join(
+//                    args->tid,
+//                    fetch2->tuple,
+//                    fetch2->flag,
+//                    args->htR[1],
+//                    args->htS[1],
+//                    &matches,
+//                    JOINFUNCTION,
+//                    chainedbuf, args->timer);//build and probe at the same time.
+//        }
     } while (!fetcher->finish(args->tid) || !args->fetcher[1]->finish(args->tid));
     printf("args->num_results (%d): %ld\n", args->tid, args->results);
 

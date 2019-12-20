@@ -421,15 +421,21 @@ result_t *QUERY5(relation_t *relC, relation_t *relO, relation_t *relL,
     joinresult->resultlist = (threadresult_t *) malloc(sizeof(threadresult_t)
                                                        * nthreads);
 #endif
+    relation_t virtual_rel;
+    relation_payload_t virtual_relPl;
+    virtual_rel.num_tuples = 0;
+    virtual_rel.tuples = NULL;
+    virtual_relPl.num_tuples = 0;
+    virtual_relPl.rows = NULL;
+
     initialize(nthreads, param);
     param.fetcher = new baseFetcher *[2];
-    param.shuffler = new baseShuffler *[0];
+    param.shuffler = new baseShuffler *[1];
     param.joiner = new localJoiner *[1];
     param.fetcher[0] = new JM_NP_Fetcher(nthreads, relC, relO, relPlC, relPlO);
-    param.fetcher[1] = new JM_NP_Fetcher(nthreads, relL, NULL, relPlL, NULL);
+    param.fetcher[1] = new JM_NP_Fetcher(nthreads, relL, &virtual_rel, relPlL, &virtual_relPl);
 //    param.fetcher[2] = new JB_NP_Fetcher(nthreads, relL, NULL);
     param.shuffler[0] = new HashShuffler(nthreads, relC, relO);
-    param.shuffler[1] = new HashShuffler(nthreads, relC, relO);
 
 //    param.shuffler[2] = new HashShuffler(nthreads, relL, NULL);
     param.joiner[0] = new SHJJoiner();

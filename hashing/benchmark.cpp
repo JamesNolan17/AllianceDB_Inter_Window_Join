@@ -198,14 +198,23 @@ query5(const param_t cmd_params) {
 //    // n_regionkey = r_regionkey
 //    results = join_from_file(cmd_params, nation_file, region_file, 2, 0, n_size, r_size);
 
-    createRelation(&relC, &relPlC, 0, cmd_params, customer_file, c_size, cmd_params.r_seed);
-    createRelation(&relO, &relPlO, 1, cmd_params, orders_file, o_size, cmd_params.r_seed);
-    createRelation(&relL, &relPlL, 1, cmd_params, lineitem_file, l_zise, cmd_params.r_seed);
-    createRelation(&relS, &relPlS, 1, cmd_params, supplier_file, s_size, cmd_params.r_seed);
-    createRelation(&relN, &relPlN, 1, cmd_params, nation_file, n_size, cmd_params.r_seed);
-    createRelation(&relR, &relPlR, 1, cmd_params, region_file, r_size, cmd_params.r_seed);
+//    createRelation(&relC, &relPlC, 0, cmd_params, customer_file, c_size, cmd_params.r_seed);
+//    createRelation(&relO, &relPlO, 1, cmd_params, orders_file, o_size, cmd_params.r_seed);
+//    createRelation(&relL, &relPlL, 0, cmd_params, lineitem_file, l_zise, cmd_params.r_seed);
+//    createRelation(&relS, &relPlS, 0, cmd_params, supplier_file, s_size, cmd_params.r_seed);
+//    createRelation(&relN, &relPlN, 0, cmd_params, nation_file, n_size, cmd_params.r_seed);
+//    createRelation(&relR, &relPlR, 0, cmd_params, region_file, r_size, cmd_params.r_seed);
 
+    createRelation(&relC, &relPlC, 0, cmd_params, NULL, 10, cmd_params.r_seed);
+    createRelation(&relO, &relPlO, 0, cmd_params, NULL, 10, cmd_params.r_seed);
+    createRelation(&relL, &relPlL, 0, cmd_params, NULL, 10, cmd_params.r_seed);
 
+    DEBUGMSG("relC [aligned:%d]: %s", is_aligned(relC.tuples, CACHE_LINE_SIZE),
+             print_relation(relC.tuples, 10).c_str())
+    DEBUGMSG("relO [aligned:%d]: %s", is_aligned(relO.tuples, CACHE_LINE_SIZE),
+             print_relation(relO.tuples, 10).c_str())
+    DEBUGMSG("relL [aligned:%d]: %s", is_aligned(relL.tuples, CACHE_LINE_SIZE),
+             print_relation(relL.tuples, 10).c_str())
 
      // TODO: add a new method to deal with multi-source join
     results = (*QUERY5)(&relC, &relO, &relL, &relPlC, &relPlO, &relPlL, cmd_params.nthreads);
