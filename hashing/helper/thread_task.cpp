@@ -45,7 +45,7 @@ vector<string> split_str (string s, string delimiter) {
 void* JOINFUNCTION(const tuple_t *r_tuple, const tuple_t *s_tuple, int64_t *matches) {
     if (r_tuple->key == s_tuple->key) {
 //        (*matches)++;
-        DEBUGMSG("matches: %d", *matches);
+//        DEBUGMSG("matches: %d", *matches);
     }
 }
 
@@ -591,8 +591,18 @@ QUERY5_JOIN_TASK(void *param) {
 
     //call different data BaseFetcher.
     baseFetcher *fetcher = args->fetcher[0];
+    baseFetcher *fetcher2 = args->fetcher[1];
+
+    baseShuffler *shuffler = args->shuffler[0];
+//    baseShuffler *shuffler2 = args->shuffler[1];
+
+    localJoiner *joiner = args->joiner[0];
+    localJoiner *joiner2 = args->joiner[1];
+
     int64_t matches = 0;//number of matches.
     int64_t prev_matches = 0;
+    args->htR = new hashtable_t *[2];
+    args->htS = new hashtable_t *[2];
 
     //allocate two hashtables on each thread assuming input stream statistics are known.
     uint32_t nbucketsR = (args->fetcher[0]->relR->num_tuples / BUCKET_SIZE);
@@ -610,7 +620,7 @@ QUERY5_JOIN_TASK(void *param) {
         fetch_t *fetch = fetcher->next_tuple(args->tid);
 
         if (fetch != nullptr) {
-            args->results = args->joiner[0]->join(
+            args->results = joiner->join(
                     args->tid,
                     fetch->tuple,
                     fetch->flag,
@@ -619,50 +629,53 @@ QUERY5_JOIN_TASK(void *param) {
                     &matches,
                     JOINFUNCTION,
                     chainedbuf, args->timer);//build and probe at the same time.
+//            DEBUGMSG("tid: %d, fetch: %d, R?%d, matches: %d", args->tid, fetch->tuple->key, fetch->flag, matches);
         }
         // TODO: add new fetcher, shuffler, joiner here, to construct a multi-source join.
         // need to implement a queue for downstream joins.
         // TODO: fetch another stream source, enqueue both of them,
         // TODO: use shuffler to send tuple to joiner
-        DEBUGMSG("fetch: %d, R?%d", fetch->tuple->key, fetch->flag);
+        // TODO: Draw tpch topology
 
-//        // current tuple is matched, add to downstream queue
-//        if (matches > prev_matches) {
-//            DEBUGMSG("aaaaa0");
-//            // change prev_matches to current matches, need to keyby new key, and push to new queue
-//            prev_matches = matches;
-//            if (fetch->flag) {
-//                fetch->flag = false;
-//                args->shuffler[0]->push(fetch->tuple->key, fetch, false);
-//            } else {
-//                // keyby new key
-////                table_t row = args->fetcher[0]->relPlR->rows[fetch->tuple->payload];
-////                intkey_t key = stoi(split_str(row.value, "|")[0]);
-////                fetch->tuple->key = key;
-//                args->shuffler[1]->push(fetch->tuple->key, fetch, false);
-//            }
-//        }
-//
-//        // downstream fetcher need to fetch new tuple every iteration.
-//        fetch_t *fetch2 = args->fetcher[1]->next_tuple(args->tid);
-//        DEBUGMSG("fetch2: %d, R?%d", fetch2->tuple->key, fetch2->flag);
-//
-//        if (fetch2 != nullptr) {
-//            args->shuffler[0]->push(fetch2->tuple->key, fetch2, false);
-//        }
-//        fetch2 = args->shuffler[0]->pull(args->tid, false);//re-fetch from its shuffler.
-//        if (fetch2 != nullptr) {
-//            args->joiner[1]->join(
-//                    args->tid,
-//                    fetch2->tuple,
-//                    fetch2->flag,
-//                    args->htR[1],
-//                    args->htS[1],
-//                    &matches,
-//                    JOINFUNCTION,
-//                    chainedbuf, args->timer);//build and probe at the same time.
-//        }
-    } while (!fetcher->finish(args->tid) || !args->fetcher[1]->finish(args->tid));
+
+        // current tuple is matched, add to downstream queue
+        if (matches > prev_matches) {
+            // change prev_matches to current matches, need to keyby new key, and push to new queue
+            prev_matches = matches;
+            if (fetch->flag) {
+                fetch->flag = false;
+                shuffler->push(fetch->tuple->key, fetch, false);
+            } else {
+                // keyby new key
+                table_t row = args->fetcher[0]->relPlR->rows[fetch->tuple->payload];
+                intkey_t key = stoi(split_str(row.value, "|")[0]);
+                fetch->tuple->key = key;
+//                shuffler2->push(fetch->tuple->key, fetch, false);
+            }
+        }
+
+        // downstream fetcher need to fetch new tuple every iteration.
+        fetch_t *fetch2 = fetcher2->next_tuple(args->tid);
+
+
+
+        if (fetch2 != nullptr) {
+            shuffler->push(fetch2->tuple->key, fetch2, false);
+        }
+        fetch2 = shuffler->pull(args->tid, false);//re-fetch from its shuffler.
+        if (fetch2 != nullptr) {
+            DEBUGMSG("tid: %d, fetch2: %d, R?%d, matches: %d", args->tid, fetch2->tuple->key, fetch2->flag, matches);
+            args->results = joiner2->join(
+                    args->tid,
+                    fetch2->tuple,
+                    fetch2->flag,
+                    args->htR[1],
+                    args->htS[1],
+                    &matches,
+                    JOINFUNCTION,
+                    chainedbuf, args->timer);//build and probe at the same time.
+        }
+    } while (!fetcher2->finish(args->tid));
     printf("args->num_results (%d): %ld\n", args->tid, args->results);
 
 #ifdef JOIN_RESULT_MATERIALIZE

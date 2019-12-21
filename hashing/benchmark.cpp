@@ -205,16 +205,18 @@ query5(const param_t cmd_params) {
 //    createRelation(&relN, &relPlN, 0, cmd_params, nation_file, n_size, cmd_params.r_seed);
 //    createRelation(&relR, &relPlR, 0, cmd_params, region_file, r_size, cmd_params.r_seed);
 
-    createRelation(&relC, &relPlC, 0, cmd_params, NULL, 10, cmd_params.r_seed);
-    createRelation(&relO, &relPlO, 0, cmd_params, NULL, 10, cmd_params.r_seed);
-    createRelation(&relL, &relPlL, 0, cmd_params, NULL, 10, cmd_params.r_seed);
+    int num = 3;
+
+    createRelation(&relC, &relPlC, 0, cmd_params, NULL, num, cmd_params.r_seed);
+    createRelation(&relO, &relPlO, 0, cmd_params, NULL, num, cmd_params.r_seed);
+    createRelation(&relL, &relPlL, 0, cmd_params, NULL, num, cmd_params.r_seed);
 
     DEBUGMSG("relC [aligned:%d]: %s", is_aligned(relC.tuples, CACHE_LINE_SIZE),
-             print_relation(relC.tuples, 10).c_str())
+             print_relation(relC.tuples, num).c_str())
     DEBUGMSG("relO [aligned:%d]: %s", is_aligned(relO.tuples, CACHE_LINE_SIZE),
-             print_relation(relO.tuples, 10).c_str())
+             print_relation(relO.tuples, num).c_str())
     DEBUGMSG("relL [aligned:%d]: %s", is_aligned(relL.tuples, CACHE_LINE_SIZE),
-             print_relation(relL.tuples, 10).c_str())
+             print_relation(relL.tuples, num).c_str())
 
      // TODO: add a new method to deal with multi-source join
     results = (*QUERY5)(&relC, &relO, &relL, &relPlC, &relPlO, &relPlL, cmd_params.nthreads);

@@ -431,7 +431,7 @@ result_t *QUERY5(relation_t *relC, relation_t *relO, relation_t *relL,
     initialize(nthreads, param);
     param.fetcher = new baseFetcher *[2];
     param.shuffler = new baseShuffler *[1];
-    param.joiner = new localJoiner *[1];
+    param.joiner = new localJoiner *[2];
     param.fetcher[0] = new JM_NP_Fetcher(nthreads, relC, relO, relPlC, relPlO);
     param.fetcher[1] = new JM_NP_Fetcher(nthreads, relL, &virtual_rel, relPlL, &virtual_relPl);
 //    param.fetcher[2] = new JB_NP_Fetcher(nthreads, relL, NULL);
@@ -439,6 +439,7 @@ result_t *QUERY5(relation_t *relC, relation_t *relO, relation_t *relL,
 
 //    param.shuffler[2] = new HashShuffler(nthreads, relL, NULL);
     param.joiner[0] = new SHJJoiner();
+    param.joiner[1] = new SHJJoiner();
     LAUNCH_QUERY(nthreads, param, timer, QUERY5_JOIN_TASK)
     param = finishing(nthreads, param);
 #ifndef NO_TIMING

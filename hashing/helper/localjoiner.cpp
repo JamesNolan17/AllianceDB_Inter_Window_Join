@@ -89,7 +89,7 @@ long SHJJoiner::join(int32_t tid, tuple_t *tuple, bool tuple_R,
     const uint32_t hashmask_S = htS->hash_mask;
     const uint32_t skipbits_S = htS->skip_bits;
 
-//    DEBUGMSG(1, "JOINING: tid: %d, tuple: %d, R?%d\n", tid, tuple->key, tuple_R)
+//    DEBUGMSG("JOINING: tid: %d, tuple: %d, R?%d\n", tid, tuple->key, tuple_R)
     if (tuple_R) {
         build_hashtable_single(htR, tuple, hashmask_R, skipbits_R);//(1)
 //        DEBUGMSG(1, "tid %d add tuple r %d to R-window. \n", tid, tuple->key)
@@ -129,7 +129,7 @@ long SHJJoiner::join(int32_t tid, tuple_t *tuple, bool tuple_R,
 //                         print_window(window1.R_Window).c_str());
         }
     }
-//    DEBUGMSG(1, "JOINING FINISH: tid: %d, tuple: %d, R?%d\n", tid, tuple->key, tuple_R)
+//    DEBUGMSG("JOINING FINISH: tid: %d, tuple: %d, R?%d\n", tid, tuple->key, tuple_R)
     return *matches;
 }
 

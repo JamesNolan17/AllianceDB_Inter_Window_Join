@@ -424,6 +424,7 @@ main(int argc, char **argv) {
     PCM_OUT    = cmd_params.perfout;
 #endif
     query5(cmd_params);
+//    benchmark(cmd_params);
 
 #if (defined(PERSIST_RELATIONS) && defined(JOIN_RESULT_MATERIALIZE))
     printf("[INFO ] Persisting the join result to \"Out.tbl\" ...\n");
