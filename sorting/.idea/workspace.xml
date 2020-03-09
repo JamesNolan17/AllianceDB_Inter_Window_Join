@@ -11,38 +11,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6e894042-b970-4786-b136-72bfef1ebb12" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../hashing/configure" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/affinity.h" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/utils/affinity.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/barrier.h" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/utils/barrier.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/config.h" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/utils/config.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/cpu_mapping.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/utils/cpu_mapping.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/cpu_mapping.h" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/utils/cpu_mapping.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/generator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/utils/generator.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/generator.h" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/utils/generator.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/genzipf.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/utils/genzipf.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/genzipf.h" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/utils/genzipf.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/hash_main.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/lock.h" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/utils/lock.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/no_partitioning_join.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/single_thread/blocking/no_partitioning_join.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/no_partitioning_join.h" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/single_thread/blocking/no_partitioning_join.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/npj_params.h" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/single_thread/blocking/npj_params.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/npj_types.h" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/single_thread/blocking/npj_types.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/parallel_radix_join.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/multiple_thread/parallel_radix_join.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/parallel_radix_join.h" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/multiple_thread/parallel_radix_join.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/perf_counters.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/utils/perf_counters.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/perf_counters.h" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/utils/perf_counters.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/prj_params.h" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/multiple_thread/prj_params.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/rdtsc.h" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/utils/rdtsc.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/task_queue.h" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/utils/task_queue.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hashing/types.h" beforeDir="false" afterPath="$PROJECT_DIR$/../hashing/utils/types.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" afterDir="false" />
-    </list>
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <list default="true" id="6e894042-b970-4786-b136-72bfef1ebb12" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -51,7 +20,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Release" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
@@ -70,18 +39,6 @@
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
     </key>
-  </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
-      <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
-      </list>
-    </option>
   </component>
   <component name="RunManager">
     <configuration name="sorting" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="AllianceDB" TARGET_NAME="sorting" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="AllianceDB" RUN_TARGET_NAME="sorting">
@@ -120,5 +77,23 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="WindowStateProjectService">
+    <state width="1638" height="352" key="GridCell.Tab.0.bottom" timestamp="1583763639830">
+      <screen x="2560" y="23" width="1680" height="1027" />
+    </state>
+    <state width="1638" height="352" key="GridCell.Tab.0.bottom/0.23.2560.1417/2560.23.1680.1027@2560.23.1680.1027" timestamp="1583763639830" />
+    <state width="1638" height="352" key="GridCell.Tab.0.center" timestamp="1583763639829">
+      <screen x="2560" y="23" width="1680" height="1027" />
+    </state>
+    <state width="1638" height="352" key="GridCell.Tab.0.center/0.23.2560.1417/2560.23.1680.1027@2560.23.1680.1027" timestamp="1583763639829" />
+    <state width="1638" height="352" key="GridCell.Tab.0.left" timestamp="1583763639828">
+      <screen x="2560" y="23" width="1680" height="1027" />
+    </state>
+    <state width="1638" height="352" key="GridCell.Tab.0.left/0.23.2560.1417/2560.23.1680.1027@2560.23.1680.1027" timestamp="1583763639828" />
+    <state width="1638" height="352" key="GridCell.Tab.0.right" timestamp="1583763639829">
+      <screen x="2560" y="23" width="1680" height="1027" />
+    </state>
+    <state width="1638" height="352" key="GridCell.Tab.0.right/0.23.2560.1417/2560.23.1680.1027@2560.23.1680.1027" timestamp="1583763639829" />
   </component>
 </project>
