@@ -65,7 +65,6 @@ typedef struct joinconfig_t joinconfig_t;
  * @note this layout is chosen as a work-around for AVX double operations.
  */
 struct tuple_t {
-//    value_t *payload;
     value_t payloadID;//TODO: make sure payload is simply the id of the tuple.
     intkey_t key;//little end, lowest is the most significant bit.
 };

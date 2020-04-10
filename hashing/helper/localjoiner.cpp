@@ -326,9 +326,9 @@ join(int32_t tid, tuple_t *tuple, int fat_tuple_size, bool IStuple_R, int64_t *m
 
         DEBUGMSG("TID: %d Sorting in normal stage start", tid)
 
-        auto inputS = copy_tuples(arg->tmp_relS, arg->outerPtrS);
+//        auto inputS = copy_tuples(arg->tmp_relS, arg->outerPtrS);
 
-        join_tuple_single(tid, inputS, &arg->outerPtrS,
+        join_tuple_single(tid, arg->tmp_relS, &arg->outerPtrS,
                           tuple, fat_tuple_size, matches, timer, arg,
                           IStuple_R, chainedbuf);
         DEBUGMSG("TID: %d Join during run creation:%d", tid, *matches)
@@ -348,8 +348,8 @@ join(int32_t tid, tuple_t *tuple, int fat_tuple_size, bool IStuple_R, int64_t *m
                  print_tuples(arg->tmp_relS, arg->outerPtrS).c_str())
 
         DEBUGMSG("TID: %d Sorting in normal stage start", tid)
-        auto inputR = copy_tuples(arg->tmp_relR, arg->outerPtrR);
-        join_tuple_single(tid, inputR, &arg->outerPtrR, tuple, fat_tuple_size,
+//        auto inputR = copy_tuples(arg->tmp_relR, arg->outerPtrR);
+        join_tuple_single(tid, arg->tmp_relR, &arg->outerPtrR, tuple, fat_tuple_size,
                           matches, timer, arg, IStuple_R, chainedbuf);
         DEBUGMSG("TID: %d Join during run creation:%d", tid, *matches)
 
@@ -486,9 +486,12 @@ merge(int32_t tid, int64_t *matches,
     int stepR;
     int stepS;
     /***Handling Left-Over***/
-    DEBUGMSG("TID:%d in Clean up stage, current matches:", tid, *matches)
-    stepR = arg->innerPtrR;
-    stepS = arg->innerPtrS;
+    printf("TID:%d in Clean up stage, current matches:%ld", tid, *matches);
+//    stepR = arg->innerPtrR;
+//    stepS = arg->innerPtrS;
+
+    stepR = arg->sizeR - arg->outerPtrR;
+    stepS = arg->sizeS - arg->outerPtrS;
 
     tuple_t *out_relR;
     tuple_t *out_relS;
@@ -584,37 +587,7 @@ void PMJJoiner::join(int32_t tid, tuple_t *tuple, bool IStuple_R, int64_t *match
             delete out_relR;
             delete out_relS;
         }
-    } else if (arg->outerPtrR + arg->innerPtrR == arg->sizeR &&
-               arg->outerPtrS + arg->innerPtrS == arg->sizeS) {//received everything
-
-        /***Handling Left-Over***/
-        stepR = arg->sizeR - arg->outerPtrR;
-        stepS = arg->sizeS - arg->outerPtrS;
-
-        auto relRsz = stepR * sizeof(tuple_t)
-                      + RELATION_PADDING(1, CACHELINEPADDING(1));//TODO: think why we need to patch this.
-        out_relR = (tuple_t *) malloc_aligned(relRsz);
-
-        relRsz = stepS * sizeof(tuple_t)
-                 + RELATION_PADDING(1, CACHELINEPADDING(1));//TODO: think why we need to patch this.
-        out_relS = (tuple_t *) malloc_aligned(relRsz);
-
-
-        sorting_phase(tid, arg->tmp_relR + arg->outerPtrR, stepR, arg->tmp_relS + arg->outerPtrS, stepS,
-                      matches, &arg->Q,
-//                      arg->out_relR + arg->outerPtrR,
-//                      arg->out_relS + arg->outerPtrS,
-                      out_relR,
-                      out_relS,
-                      timer, chainedbuf);
-
-        merging_phase(matches, &arg->Q, timer, chainedbuf, merge_step);
-
-        delete out_relR;
-        delete out_relS;
     }
-
-
 }
 
 

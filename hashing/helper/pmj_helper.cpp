@@ -5,6 +5,7 @@
 #include "pmj_helper.h"
 #include "sort_common.h"
 #include "localjoiner.h"
+#include "scalarsort.h"
 
 
 void
@@ -84,10 +85,12 @@ void earlyJoinMergedRuns(std::vector<run> *Q, int64_t *matches, run *newRun, T_T
                 if (posR < lengthR) {
                     //the left most of each subsequence is the smallest item of the subsequence.
                     readR = &runR[posR];
-
                 }
             }
-            if (readR && (!minR || minR->key > readR->key)) {
+            if (readR &&
+                (!minR
+                 || minR->key > readR->key
+                )) {
                 minR = readR;
                 i = run_itr;//mark the subsequence to be updated.
                 findI = true;
@@ -103,17 +106,20 @@ void earlyJoinMergedRuns(std::vector<run> *Q, int64_t *matches, run *newRun, T_T
                 if (posS < lengthS) {
                     //the left most of each subsequence is the smallest item of the subsequence.
                     readS = runS.at(posS);
-
+                    assert(readS->key>0);
                 }
             } else {
                 tuple_t *runS = (run_itr).operator*().S;//get Rs in each run.
                 if (posS < lengthS) {
                     //the left most of each subsequence is the smallest item of the subsequence.
                     readS = &runS[posS];
-
+                    assert(readS->key>0);
                 }
             }
-            if (readS && (!minS || minS->key > readS->key)) {
+            if (readS && (
+                    !minS
+                    || minS->key > readS->key
+            )) {
                 minS = readS;
                 j = run_itr;//mark the subsequence to be updated.
                 findJ = true;
@@ -174,13 +180,14 @@ void earlyJoinMergedRuns(std::vector<run> *Q, int64_t *matches, run *newRun, T_T
 }
 
 void insert(std::vector<run> *Q, tuple_t *run_R, int lengthR, tuple_t *run_S, int lengthS) {
-//    if (run_R->payloadID < 0) {
-//        printf("wrong");
-//    }
-//    if (run_S->payloadID < 0) {
-//        printf("wrong");
-//    }
-
+#ifdef DEBUG
+    if (run_R->payloadID < 0) {
+        printf("wrong");
+    }
+    if (run_S->payloadID < 0) {
+        printf("wrong");
+    }
+#endif
     Q->push_back(run(run_R, run_S, lengthR, lengthS));
 }
 
@@ -199,28 +206,28 @@ void sorting_phase(int32_t tid, tuple_t *inptrR, int sizeR, tuple_t *inptrS, int
                    std::vector<run> *Q, tuple_t *outputR, tuple_t *outputS, T_TIMER *timer,
                    chainedtuplebuffer_t *chainedbuf) {
 
-    DEBUGMSG("TID:%d, Initial R [aligned:%d]: %s", tid, is_aligned(inptrR, CACHE_LINE_SIZE),
-             print_relation(inptrR, sizeR).c_str())
+//    DEBUGMSG("TID:%d, Initial R [aligned:%d]: %s", tid, is_aligned(inptrR, CACHE_LINE_SIZE),
+//             print_relation(inptrR, sizeR).c_str())
     if (scalarflag)
         scalarsort_tuples(&inptrR, &outputR, sizeR);
     else
-        avxsort_tuples(&inptrR, &outputR, sizeR);// the method will swap input and output pointers.
-    DEBUGMSG("TID:%d, Sorted R: %s", tid, print_relation(outputR, sizeR).c_str())
+        avxsort_tuples(&inptrR, &outputR, sizeR);// the method may swap input and output pointers.
+//    DEBUGMSG("TID:%d, Sorted R: %s", tid, print_relation(outputR, sizeR).c_str())
 
 #ifdef DEBUG
     if (!is_sorted_helper((int64_t *) outputR, sizeR)) {
         DEBUGMSG("===> %d-thread -> R is NOT sorted, size = %d\n", tid, sizeR)
     }
 #endif
-    DEBUGMSG("%d-thread Initial S [aligned:%d]: %s", tid, is_aligned(inptrS, CACHE_LINE_SIZE),
-             print_relation(inptrS, sizeS).c_str())
+//    DEBUGMSG("%d-thread Initial S [aligned:%d]: %s", tid, is_aligned(inptrS, CACHE_LINE_SIZE),
+//             print_relation(inptrS, sizeS).c_str())
 
     if (scalarflag)
         scalarsort_tuples(&inptrS, &outputS, sizeS);
     else
-        avxsort_tuples(&inptrS, &outputS, sizeS);// the method will swap input and output pointers.
+        avxsort_tuples(&inptrS, &outputS, sizeS);// the method may swap input and output pointers.
 
-    DEBUGMSG("Sorted S: %s", print_relation(outputS, sizeS).c_str())
+//    DEBUGMSG("Sorted S: %s", print_relation(outputS, sizeS).c_str())
 
 #ifdef DEBUG
     if (!is_sorted_helper((int64_t *) outputS, sizeS)) {
@@ -233,8 +240,7 @@ void sorting_phase(int32_t tid, tuple_t *inptrR, int sizeR, tuple_t *inptrS, int
 #endif
 
 #ifdef MERGE
-    //this is considered as part of ``others" overhead.
-    DEBUGMSG("Insert Q.")
+//    DEBUGMSG("Insert Q.")
     insert(Q, outputR, sizeR, outputS, sizeS);
 #endif
 }
@@ -268,8 +274,8 @@ void sorting_phase(int32_t tid, const relation_t *rel_R, const relation_t *rel_S
     //take subset of R and S to sort and join.
     if (*i < sizeR) {
         inptrR = rel_R->tuples + *i;
-        DEBUGMSG("Initial R [aligned:%d]: %s", is_aligned(inptrR, CACHE_LINE_SIZE),
-                 print_relation(rel_R->tuples + *i, progressive_stepR).c_str())
+//        DEBUGMSG("Initial R [aligned:%d]: %s", is_aligned(inptrR, CACHE_LINE_SIZE),
+//                 print_relation(rel_R->tuples + *i, progressive_stepR).c_str())
 
 
         if (scalarflag)
@@ -277,11 +283,10 @@ void sorting_phase(int32_t tid, const relation_t *rel_R, const relation_t *rel_S
         else
             avxsort_tuples(&inptrR, &outptrR, progressive_stepR);// the method will swap input and output pointers.
 
-
-        DEBUGMSG("Sorted R: %s",
-                 print_relation(outptrR, progressive_stepR).c_str())
+//        DEBUGMSG("Sorted R: %s",
+//                 print_relation(outptrR, progressive_stepR).c_str())
 #ifdef DEBUG
-        //        DEBUGMSG("Address of rel_R: %p, outptrR:%p ", rel_R->tuples, outptrR)
+        //DEBUGMSG("Address of rel_R: %p, outptrR:%p ", rel_R->tuples, outptrR)
         if (!is_sorted_helper((int64_t *) outptrR, progressive_stepR)) {
             DEBUGMSG("===> %d-thread -> R is NOT sorted, size = %d\n", tid, progressive_stepR)
         }
@@ -295,8 +300,8 @@ void sorting_phase(int32_t tid, const relation_t *rel_R, const relation_t *rel_S
         else
             avxsort_tuples(&inptrS, &outptrS, progressive_stepS);
 
-        DEBUGMSG("Sorted S: %s",
-                 print_relation(outptrS, progressive_stepS).c_str())
+//        DEBUGMSG("Sorted S: %s",
+//                 print_relation(outptrS, progressive_stepS).c_str())
 #ifdef DEBUG
         //        DEBUGMSG("Address of rel_S: %p, outptrS:%p ", rel_S->tuples, outptrS)
         if (!is_sorted_helper((int64_t *) outptrS, progressive_stepS)) {

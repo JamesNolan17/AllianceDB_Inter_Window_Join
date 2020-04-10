@@ -1,12 +1,7 @@
-//
-// Created by Shuhao Zhang on 14/11/19.
-//
-
 /** @version $Id$ */
 
 #include "avxsort.h"
 #include "avxsort_core.h"
-#include "../joins/common_functions.h"
 
 #ifndef CACHE_LINE_SIZE
 #define CACHE_LINE_SIZE 64
@@ -23,8 +18,7 @@
 #endif
 
 
-extern int keycmp(const void *k1, const void *k2);
-
+extern int keycmp(const void * k1, const void * k2);
 
 /*******************************************************************************
  *                                                                             *
@@ -125,7 +119,6 @@ avxsort_unaligned(int64_t ** inputptr, int64_t ** outputptr, uint64_t nitems)
 
 }
 
-
 /*******************************************************************************
  *                                                                             *
  *               Aligned Version of the Implementation                         *
@@ -157,14 +150,14 @@ avxsort_aligned(int64_t ** inputptr, int64_t ** outputptr, uint64_t nitems)
     /** 1) Divide the input into chunks fitting into L2 cache. */
     /* one more chunk if not divisible */
     for(i = 0; i < nchunks; i++) {
-        avxsort_block_aligned(&ptrs[i][0], &ptrs[i][1], BLOCKSIZE);//swap reverse
-        swap(&ptrs[i][0], &ptrs[i][1]);//swap in-order
+        avxsort_block_aligned(&ptrs[i][0], &ptrs[i][1], BLOCKSIZE);
+        swap(&ptrs[i][0], &ptrs[i][1]);
     }
 
     if(rem) {
         /* sort the last chunk which is less than BLOCKSIZE */
-        avxsort_rem_aligned(&ptrs[i][0], &ptrs[i][1], rem);//swap reverse
-        swap(&ptrs[i][0], &ptrs[i][1]);//swap in-order
+        avxsort_rem_aligned(&ptrs[i][0], &ptrs[i][1], rem);
+        swap(&ptrs[i][0], &ptrs[i][1]);
         sizes[i] = rem;
     }
 
@@ -212,23 +205,6 @@ avxsort_aligned(int64_t ** inputptr, int64_t ** outputptr, uint64_t nitems)
 
 }
 
-/** for sorting tuples on key */
-static inline int
-compare_tuples(const tuple_t a, const tuple_t b)
-{
-    return (a.key < b.key);
-}
-
-void scalarsort_tuples(tuple_t **inputptr, tuple_t **outputptr, uint64_t nitems) {
-    tuple_t * in  = *inputptr;
-    tuple_t * out = *outputptr;
-
-    std::sort(in, in + nitems, compare_tuples);
-
-    *inputptr = out;
-    *outputptr = in;
-}
-
 void
 avxsort_tuples(tuple_t ** inputptr, tuple_t ** outputptr, uint64_t nitems)
 {
@@ -244,4 +220,28 @@ avxsort_tuples(tuple_t ** inputptr, tuple_t ** outputptr, uint64_t nitems)
 
     *inputptr = (tuple_t *)(input);
     *outputptr = (tuple_t *)(output);
+}
+
+void
+avxsort_int64(int64_t ** inputptr, int64_t ** outputptr, uint64_t nitems)
+{
+    /* \todo: implement */
+    int64_t * input  = (int64_t*)(*inputptr);
+    int64_t * output = (int64_t*)(*outputptr);
+
+    /* choose actual implementation depending on the input alignment */
+    if(((uintptr_t)input % CACHE_LINE_SIZE) == 0
+       && ((uintptr_t)output % CACHE_LINE_SIZE) == 0)
+        avxsort_aligned(&input, &output, nitems);
+    else
+        avxsort_unaligned(&input, &output, nitems);
+
+    *inputptr = (int64_t *)(input);
+    *outputptr = (int64_t *)(output);
+}
+
+void
+avxsort_int32(int32_t ** inputptr, int32_t ** outputptr, uint64_t nitems)
+{
+    /* \todo: implement */
 }

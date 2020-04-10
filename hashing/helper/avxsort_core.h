@@ -20,7 +20,8 @@
 
 #include "avxcommon.h"
 
-//#include "params.h"
+#include "../utils/params.h"
+#include "../joins/common_functions.h"
 /* #include "iacaMarks.h" */
 
 /* just make the code compile without AVX support */
@@ -469,7 +470,8 @@ merge16_varlen(int64_t *restrict inpA,
         }
 
         /* flush the register to one of the lists */
-        int64_t hireg[4] __attribute__((aligned(16)));
+//        int64_t hireg[4] __attribute__((aligned(16)));
+        auto hireg = (int64_t *) malloc_aligned(4 * sizeof(int64_t));
         _mm256_store_pd((double *) hireg, outreg2h2);
 
         if (*((int64_t *) inA) >= *((int64_t *) (hireg + 3))) {
@@ -639,7 +641,8 @@ merge8_varlen(int64_t *restrict inpA,
         }
 
         /* flush the register to one of the lists */
-        int64_t hireg[4] __attribute__((aligned(16)));
+//        int64_t hireg[4] __attribute__((aligned(16)));
+        auto hireg = (int64_t *) malloc_aligned(4 * sizeof(int64_t));
         _mm256_store_pd((double *) hireg, outreg2h);
 
         if (*((int64_t *) inA) >= *((int64_t *) (hireg + 3))) {
@@ -967,7 +970,8 @@ merge4_varlen(int64_t *restrict inpA,
         }
 
         /* flush the register to one of the lists */
-        int64_t hireg[4] __attribute__((aligned(16)));
+//        int64_t hireg[4] __attribute__((aligned(16)));
+        auto hireg = (int64_t *) malloc_aligned(4 * sizeof(int64_t));
         _mm256_store_pd((double *) hireg, outreg2);
 
         if (*((int64_t *) inA) >= *((int64_t *) (hireg + 3))) {
@@ -1418,7 +1422,6 @@ int keycmp(const void *k1, const void *k2) {
     return ret;
 }
 
-
 inline __attribute__((__always_inline__)) void
 swap(int64_t **A, int64_t **B) {
     int64_t *tmp = *A;
@@ -1522,7 +1525,7 @@ avxsort_rem(int64_t **inputptr, int64_t **outputptr, uint32_t nitems) {
 
 #else /* sort using scalar */
 
-#ifdef __cplusplus
+    #ifdef __cplusplus
     std::sort(inp, inp + nitems);
 #else
     qsort(inp, nitems, sizeof(int64_t), keycmp);
@@ -1949,7 +1952,8 @@ merge16_varlen_aligned(int64_t *restrict inpA,
         }
 
         /* flush the register to one of the lists */
-        int64_t hireg[4] __attribute__((aligned(16)));
+//        int64_t hireg[4] __attribute__((aligned(16)));
+        auto hireg = (int64_t *) malloc_aligned(4 * sizeof(int64_t));
         _mm256_store_pd((double *) hireg, outreg2h2);
 
         if (*((int64_t *) inA) >= *((int64_t *) (hireg + 3))) {
@@ -2155,7 +2159,7 @@ avxsort_block_aligned(int64_t **inputptr, int64_t **outputptr, int BLOCK_SIZE) {
     int ptridx = j & 1;
 
     inp = ptrs[ptridx];
-    out = ptrs[ptridx ^ 1];//should not swap
+    out = ptrs[ptridx ^ 1];
 
     merge16_eqlen_aligned(inp, inp + inlen, out, inlen);
     merge16_eqlen_aligned(inp + 2 * inlen, inp + 3 * inlen, out + 2 * inlen, inlen);
@@ -2170,11 +2174,9 @@ avxsort_block_aligned(int64_t **inputptr, int64_t **outputptr, int BLOCK_SIZE) {
     /* now we know that input is out from the last pass */
     merge16_eqlen_aligned(out, out + inlen, inp, inlen);
 
-    if (!ptridx) {//BUG FIX.
-        /* finally swap input/output ptrs, output is the sorted list */
-        *outputptr = inp;
-        *inputptr = out;
-    }
+    /* finally swap input/output ptrs, output is the sorted list */
+    *outputptr = inp;
+    *inputptr = out;
 }
 
 /**
@@ -2208,10 +2210,10 @@ avxsort_rem_aligned(int64_t **inputptr, int64_t **outputptr, uint32_t nitems) {
         ptrs[i][1] = out + pos;
         sizes[i] = nxtpow;
 
-        avxsort_block_aligned(&ptrs[i][0], &ptrs[i][1], nxtpow);//swap reverse
+        avxsort_block_aligned(&ptrs[i][0], &ptrs[i][1], nxtpow);
         pos += nxtpow;
         n -= nxtpow;
-        swap(&ptrs[i][0], &ptrs[i][1]);//swap in-order
+        swap(&ptrs[i][0], &ptrs[i][1]);
         i++;
 
         while (n < nxtpow) {
@@ -2272,7 +2274,7 @@ avxsort_rem_aligned(int64_t **inputptr, int64_t **outputptr, uint32_t nitems) {
 
 #else /* sort using scalar */
 
-#ifdef __cplusplus
+    #ifdef __cplusplus
     std::sort(inp, inp + nitems);
 #else
     qsort(inp, nitems, sizeof(int64_t), keycmp);

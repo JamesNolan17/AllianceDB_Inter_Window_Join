@@ -7,10 +7,6 @@
 
 #include "../utils/types.h"
 
-
-void
-scalarsort_tuples(tuple_t ** inputptr, tuple_t ** outputptr, uint64_t nitems);
-
 void
 avxsort_tuples(tuple_t **inputptr, tuple_t **outputptr, uint64_t nitems);
 

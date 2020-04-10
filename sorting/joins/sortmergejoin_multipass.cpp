@@ -186,9 +186,6 @@ sortmergejoin_multipass_thread(void *param) {
 
 #ifndef NO_TIMING
     END_MEASURE_PARTITION(args->timer)/* partition end */
-#endif
-
-#ifndef NO_TIMING
     BEGIN_MEASURE_SORT_ACC(args->timer)/* sort start */
 #endif
 
@@ -403,7 +400,6 @@ mpass_sorting_phase(relation_t **relRparts, relation_t **relSparts, arg_t *args)
         args->threadrelchunks[my_tid][i].R.tuples = outptr;
         args->threadrelchunks[my_tid][i].R.num_tuples = ntuples_per_part;
     }
-
 
     offset = 0;
     optr = args->tmp_sortS + my_tid * CACHELINEPADDING(PARTFANOUT);

@@ -60,8 +60,8 @@ struct run {//a pair of runs
     bool merged = false;
 
     run(tuple_t *run_R, tuple_t *run_S, int lengthR, int lengthS) {
-        R = run_R;//only one pair initially.
-        S = run_S;//only one pair initially.
+        R = copy_tuples(run_R,lengthR);//only one pair initially.
+        S = copy_tuples(run_S,lengthS);//only one pair initially.
         posR = 0;
         posS = 0;
         this->lengthR = lengthR;

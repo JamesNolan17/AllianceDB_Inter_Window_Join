@@ -136,6 +136,15 @@ public:
     join(int32_t tid, tuple_t *tuple, bool IStuple_R, int64_t *matches,
             /*void *(*thread_fun)(const tuple_t *, const tuple_t *, int64_t *),*/ void *pVoid);
 
+    /**
+     * This is used for HS only, and its outdated.
+     * @param tid
+     * @param fat_tuple
+     * @param fat_tuple_size
+     * @param IStuple_R
+     * @param matches
+     * @param pVoid
+     */
     void join(int32_t tid, tuple_t *fat_tuple, int fat_tuple_size, bool IStuple_R, int64_t *matches,
             /*void *(*thread_fun)(const tuple_t *, const tuple_t *, int64_t *),*/ void *pVoid);
 

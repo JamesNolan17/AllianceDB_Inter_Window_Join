@@ -302,9 +302,7 @@ random_unique_gen_thread(void *args) {
     for (i = 0; i < rel->num_tuples; i++) {
         rel->tuples[i].key = firstkey;
         rel->tuples[i].payloadID = firstkey;
-        if (rel->tuples[i].payloadID < 0) {
-            printf("Something is wrong.");
-        }
+        assert (rel->tuples[i].payloadID > 0);
         if (firstkey == maxid)
             firstkey = 0;
 
