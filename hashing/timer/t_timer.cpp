@@ -401,6 +401,29 @@ std::vector<double> global_record;
 vector<double> global_record_latency;
 vector<double> global_record_gap;
 
+void writefile(std::vector<match_t> matches, relation_t *relS, relation_t *relR) {
+    string path = "/data1/xtra/results/matches.txt";
+//    ofstream outputFile(path, std::ios::trunc);
+    ofstream outputFile(path, std::ios_base::app);
+    auto matches_size = matches.size();
+    for (auto i = 0; i < matches_size; i++) {
+        auto rKey = matches.at(i).matchR.key;
+        auto sKey = matches.at(i).matchS.key;
+        auto rPl = matches.at(i).matchR.payloadID;
+        auto sPl = matches.at(i).matchS.payloadID;
+        auto rArrivalTs = relR->payload->ts[rPl] / (2.1 * 1E6);
+        auto sArrivalTs = relS->payload->ts[sPl] / (2.1 * 1E6);
+        auto completionTs = (matches.at(i).matched_ts - actual_start_timestamp) / (2.1 * 1E6);
+        string text = "rkey: " + std::to_string(rKey) + "\t"
+                      + "arrvalts: " + std::to_string(rArrivalTs) + "\t"
+                      + "skey: " + std::to_string(sKey) + "\t"
+                      + "arrivalts: " + std::to_string(sArrivalTs) + "\t"
+                      + "completionts: " + std::to_string(completionTs) + "\n";
+        outputFile << (text);
+    }
+    outputFile.close();
+}
+
 void merge(T_TIMER *timer, relation_t *relR, relation_t *relS, uint64_t *startTS, long lastTS) {
 #ifndef NO_TIMING
     //For progressiveness measurement
@@ -440,6 +463,9 @@ void merge(T_TIMER *timer, relation_t *relR, relation_t *relS, uint64_t *startTS
         gap = (int32_t) timer->recordSID.at(i) - i;//if it's sequentially processed, gap should be zero.
         global_record_gap.push_back(gap);
     }
+
+    // write to file
+    writefile(timer->matches, relS, relR);
 #endif
 }
 

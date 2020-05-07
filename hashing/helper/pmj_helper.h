@@ -120,7 +120,7 @@ struct sweepArea {
                         DEBUGMSG("Join S:%d  with R:%d\n", it.operator*()->key, tuple->key);
                     }
 #endif
-                    END_PROGRESSIVE_MEASURE(tuple->payloadID, timer, ISTupleR)
+//                    END_PROGRESSIVE_MEASURE(tuple->payloadID, timer, ISTupleR)
 #endif
                 }
                 ++it;

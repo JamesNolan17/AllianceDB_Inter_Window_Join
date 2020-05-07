@@ -38,6 +38,7 @@ struct T_TIMER {
     std::vector<uint64_t> recordS;
     std::vector<int32_t> recordRID;
     std::vector<int32_t> recordSID;
+    std::vector<match_t> matches;
     int match_cnt = 0;
     int joiner_cnt = 0;
     int record_gap = 10;
@@ -193,17 +194,27 @@ void sortRecords(string algo_name, int exp_id, long lastTS, unsigned long inputs
 #endif
 
 #ifndef END_PROGRESSIVE_MEASURE
-#define END_PROGRESSIVE_MEASURE(payloadID, timer, IStupleR)      \
+#define END_PROGRESSIVE_MEASURE(payloadID, timer, IStupleR, curTuple, targetTuple)      \
         timer->match_cnt++;                                     \
         if(timer->match_cnt == timer->record_gap){              \
             if(IStupleR){                                        \
                 auto ts =curtick();                              \
                 timer->recordRID.push_back(payloadID);           \
                 timer->recordR.push_back(ts);                    \
+                match_t match;                                   \
+                match.matchR = curTuple;                        \
+                match.matchS = targetTuple;                     \
+                match.matched_ts =ts;                                   \
+                timer->matches.push_back(match);                 \
             }else{                                               \
                 auto ts =curtick();                              \
                 timer->recordSID.push_back(payloadID);           \
                 timer->recordS.push_back(ts);                    \
+                match_t match;                                   \
+                match.matchR = curTuple;                        \
+                match.matchS = targetTuple;                     \
+                match.matched_ts =ts;                                   \
+                timer->matches.push_back(match);                 \
                 }                                                \
             timer->match_cnt=0;                                 \
         }

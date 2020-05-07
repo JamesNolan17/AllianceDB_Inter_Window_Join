@@ -268,7 +268,7 @@ int64_t probe_hashtable_single_measure(const hashtable_t *ht, const tuple_t *tup
 #endif
 
 #ifndef NO_TIMING
-                END_PROGRESSIVE_MEASURE(tuple->payloadID, timer, ISTupleR)
+                END_PROGRESSIVE_MEASURE(tuple->payloadID, timer, ISTupleR, *tuple, b->tuples[index_ht])
 #endif
             }
         }
@@ -305,7 +305,7 @@ void match_single_tuple(const list<tuple_t *> list, const tuple_t *tuple, int64_
 //            DUMMY()
 //            this_thread::sleep_for(chrono::microseconds(timer->simulate_compute_time));
 #ifndef NO_TIMING
-            END_PROGRESSIVE_MEASURE(tuple->payloadID, (timer), ISTupleR)
+            END_PROGRESSIVE_MEASURE(tuple->payloadID, (timer), ISTupleR, *tuple, *it.operator*())
 #endif
         }
     }

@@ -176,9 +176,9 @@ add_ts(relation_t *relation, relation_payload_t *relationPayload, int step_size,
     }
 
 //#ifdef DEBUG
-//    for (auto i = 0; i < relation->num_tuples; i++) {
-//        printf("ts: %ld\n", relationPayload->ts[i]);
-//    }
+    for (auto i = 0; i < relation->num_tuples; i++) {
+        printf("ts: %f\n", relationPayload->ts[i] / (2.1 * 1E6));
+    }
 //#endif
 //    assert(interval == 0 || ts == window_size);
 }

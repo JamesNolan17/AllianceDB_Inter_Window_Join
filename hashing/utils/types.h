@@ -55,6 +55,8 @@ typedef struct tuple_t tuple_t;
 typedef struct relation_t relation_t;
 typedef struct relation_payload_t relation_payload_t;
 
+typedef struct match_t match_t;
+
 typedef struct result_t result_t;
 typedef struct threadresult_t threadresult_t;
 
@@ -78,6 +80,17 @@ struct relation_t {
     tuple_t *tuples;
     uint64_t num_tuples;
     relation_payload_t *payload;
+};
+
+/**
+ * Type definition for a match pair
+ * we need to record the arrival_ts and completion_ts, and analyse whether match is valid
+ */
+struct match_t {//8bytes.
+//    value_t *payload;
+    tuple_t matchR;//tuple of match R.
+    tuple_t matchS;//tuple of match S.
+    uint64_t matched_ts;//timestamp of matched.
 };
 
 // add a new structure to save real payload, let original payload be index of this struct
