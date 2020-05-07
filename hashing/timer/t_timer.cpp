@@ -411,13 +411,15 @@ void writefile(std::vector<match_t> matches, relation_t *relS, relation_t *relR)
         auto sKey = matches.at(i).matchS.key;
         auto rPl = matches.at(i).matchR.payloadID;
         auto sPl = matches.at(i).matchS.payloadID;
-        auto rArrivalTs = relR->payload->ts[rPl] / (2.1 * 1E6);
-        auto sArrivalTs = relS->payload->ts[sPl] / (2.1 * 1E6);
-        auto completionTs = (matches.at(i).matched_ts - actual_start_timestamp) / (2.1 * 1E6);
+        auto rArrivalTs = relR->payload->ts[rPl];
+        auto sArrivalTs = relS->payload->ts[sPl];
+        auto completionTs = (matches.at(i).matched_ts - actual_start_timestamp);
+        printf("actual start time: %lu\n", actual_start_timestamp);
         string text = "rkey: " + std::to_string(rKey) + "\t"
                       + "arrvalts: " + std::to_string(rArrivalTs) + "\t"
                       + "skey: " + std::to_string(sKey) + "\t"
                       + "arrivalts: " + std::to_string(sArrivalTs) + "\t"
+                     + "match: " + std::to_string(matches.at(i).matched_ts) + "\t"
                       + "completionts: " + std::to_string(completionTs) + "\n";
         outputFile << (text);
     }

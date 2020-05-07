@@ -128,8 +128,11 @@ next_tuple_S_first(t_state *state, const uint64_t *fetchStartTime, relation_t *r
 #ifdef WAIT
         //check the timestamp whether the tuple is ``ready" to be fetched.
         arrivalTsS = relS->payload->ts[readS->payloadID];
-        int64_t timegap = arrivalTsS - (curtick() - *fetchStartTime);
+        auto tick = curtick();
+        int64_t timegap = arrivalTsS - (tick - *fetchStartTime);
+
         if (timegap <= 0) {//if it's negative means our fetch is too slow.
+            printf("arrival ts: %lu, offset: %ld, cur tick: %lu, fetch time: %lu, tid: %d\n", arrivalTsS, timegap, tick, *fetchStartTime, std::this_thread::get_id());
             state->fetch.tuple = readS;
             state->fetch.ISTuple_R = false;
             state->start_index_S++;

@@ -176,9 +176,9 @@ add_ts(relation_t *relation, relation_payload_t *relationPayload, int step_size,
     }
 
 //#ifdef DEBUG
-    for (auto i = 0; i < relation->num_tuples; i++) {
-        printf("ts: %f\n", relationPayload->ts[i] / (2.1 * 1E6));
-    }
+//    for (auto i = 0; i < relation->num_tuples; i++) {
+//        printf("ts: %f\n", relationPayload->ts[i] / (2.1 * 1E6));
+//    }
 //#endif
 //    assert(interval == 0 || ts == window_size);
 }
@@ -1017,6 +1017,7 @@ read_relation(relation_t *rel, relation_payload_t *relPl, int32_t keyby, int32_t
         rel->tuples[cur_index].payloadID = i;
         tid_offsets[partition]++;
     }
+
 //    printf("small%d, ts %f\n", small, (double) small / rel->num_tuples);
 //    printf("maxts:%f\n", maxTS / (2.1 * 1E6));
 //    fclose(fp);

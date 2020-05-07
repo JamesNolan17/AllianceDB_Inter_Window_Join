@@ -15,6 +15,7 @@
 #include <cmath>
 #include "../utils/types.h"
 #include <chrono>
+#include <thread>
 
 using namespace std::chrono;
 
@@ -199,6 +200,7 @@ void sortRecords(string algo_name, int exp_id, long lastTS, unsigned long inputs
         if(timer->match_cnt == timer->record_gap){              \
             if(IStupleR){                                        \
                 auto ts =curtick();                              \
+                printf("cur tick3: %lu, tid: %d\n", ts, std::this_thread::get_id());                              \
                 timer->recordRID.push_back(payloadID);           \
                 timer->recordR.push_back(ts);                    \
                 match_t match;                                   \
@@ -208,6 +210,7 @@ void sortRecords(string algo_name, int exp_id, long lastTS, unsigned long inputs
                 timer->matches.push_back(match);                 \
             }else{                                               \
                 auto ts =curtick();                              \
+                printf("cur tick3: %lu, tid: %d\n", ts, std::this_thread::get_id());                              \
                 timer->recordSID.push_back(payloadID);           \
                 timer->recordS.push_back(ts);                    \
                 match_t match;                                   \

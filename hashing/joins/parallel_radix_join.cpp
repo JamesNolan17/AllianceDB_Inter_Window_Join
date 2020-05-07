@@ -342,7 +342,7 @@ bucket_chaining_join(const relation_t *const R,
 #endif
                 matches++;
 #ifndef NO_TIMING
-//                END_PROGRESSIVE_MEASURE(Stuples[i].payloadID, (timer), false)//assume S as the input tuple.
+                END_PROGRESSIVE_MEASURE(Stuples[i].payloadID, (timer), false, Rtuples[hit - 1], Stuples[i])//assume S as the input tuple.
 #endif
             }
         }
