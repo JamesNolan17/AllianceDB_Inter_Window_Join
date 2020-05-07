@@ -65,7 +65,7 @@ THREAD_TASK_NOSHUFFLE(void *param) {
         fetch_t *fetch = fetcher->next_tuple();/*time to fetch, waiting time*/
         if (fetch != nullptr) {
 #ifdef JOIN
-            printf("cur tick1: %lu, tid: %d\n", curtick(), std::this_thread::get_id());
+            DEBUGMSG("cur tick1: %lu, tid: %d\n", curtick(), std::this_thread::get_id());
             args->joiner->join(/*time to join for one tuple*/
                     args->tid,
                     fetch->tuple,
@@ -73,7 +73,7 @@ THREAD_TASK_NOSHUFFLE(void *param) {
                     args->matches,
 //                    AGGFUNCTION,
                     chainedbuf);//build and probe at the same time.
-            printf("cur tick2: %lu, tid: %d\n", curtick(), std::this_thread::get_id());
+            DEBUGMSG("cur tick2: %lu, tid: %d\n", curtick(), std::this_thread::get_id());
 #endif
         }
     } while (!fetcher->finish());

@@ -132,7 +132,7 @@ next_tuple_S_first(t_state *state, const uint64_t *fetchStartTime, relation_t *r
         int64_t timegap = arrivalTsS - (tick - *fetchStartTime);
 
         if (timegap <= 0) {//if it's negative means our fetch is too slow.
-            printf("arrival ts: %lu, offset: %ld, cur tick: %lu, fetch time: %lu, tid: %d\n", arrivalTsS, timegap, tick, *fetchStartTime, std::this_thread::get_id());
+            DEBUGMSG("arrival ts: %lu, offset: %ld, cur tick: %lu, fetch time: %lu, tid: %d\n", arrivalTsS, timegap, tick, *fetchStartTime, std::this_thread::get_id());
             state->fetch.tuple = readS;
             state->fetch.ISTuple_R = false;
             state->start_index_S++;
