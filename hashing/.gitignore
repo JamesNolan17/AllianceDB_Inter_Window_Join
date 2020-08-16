@@ -4,3 +4,5 @@
 /cmake-build-debug-remote-host/
 /cmake-build-release-remote-host/
 /cmake-build-release/
+/.clion.source.upload.marker
+/venv/
