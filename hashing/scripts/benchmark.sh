@@ -15,7 +15,7 @@ mkdir -p $expDir/results/records
 mkdir -p $expDir/results/timestamps
 
 ## Set L3 Cache according to your machine.
-sed -i -e "s/#define L3_CACHE_SIZE [[:alnum:]]*/#define L3_CACHE_SIZE 19922944/g" ../utils/params.h
+sed -i -e "s/#define L3_CACHE_SIZE [[:alnum:]]*/#define L3_CACHE_SIZE 20971520/g" ../utils/params.h
 sed -i -e "s/#define PERF_COUNTERS/#define NO_PERF_COUNTERS/g" ../utils/perf_counters.h
 sed -i -e "s/#define NO_TIMING/#define TIMING/g" ../joins/common_functions.h
 
@@ -733,10 +733,13 @@ if [ $PROFILE_YSB == 1 ]; then
   done
 fi
 
-PERF_YSB=0 ## hardware profiling with YSB, please run the program with sudo
+PERF_YSB=1 ## hardware profiling with YSB, please run the program with sudo
 if [ $PERF_YSB == 1 ]; then
-  #  compile=1
-  #  compile
+  sed -i -e "s/#define TIMING/#define NO_TIMING/g" ../joins/common_functions.h #disable time measurement
+  sed -i -e "s/#define NO_PERF_UARCH/#define PERF_UARCH/g" ../joins/common_functions.h
+  profile_breakdown=0
+  compile=1
+  compile
   for benchmark in "Kim"; do #"YSB
     id=302
     for algo in NPO PRO SHJ_JM_P SHJ_JBCR_P PMJ_JM_P PMJ_JBCR_P; do # NPO PRO SHJ_JM_P SHJ_JBCR_P PMJ_JM_P PMJ_JBCR_P
@@ -745,13 +748,15 @@ if [ $PERF_YSB == 1 ]; then
         ResetParameters
         #        SetYSBParameters
         #        SetDEBSParameters
-        STEP_SIZE=1280
-        STEP_SIZE_S=12800
-        WINDOW_SIZE=10000
+#        STEP_SIZE=12800
+#        STEP_SIZE_S=12800
+        WINDOW_SIZE=5000
         rm /data1/xtra/results/breakdown/perf_$id.csv
-        perfuArchBenchmarkRun
+#        perfuArchBenchmarkRun
+        KimRun
         ;;
       esac
+      sleep 5
       let "id++"
     done
   done
@@ -771,6 +776,10 @@ if [ $PERF_YSB == 1 ]; then
 #      let "id++"
 #    done
 #  done
+
+## TODO: reset back all parameters, should have a general function to do this.
+#  sed -i -e "s/#define NO_TIMING/#define TIMING/g" ../joins/common_functions.h #disable time measurement
+#  sed -i -e "s/#define PERF_UARCH/#define NO_PERF_UARCH/g" ../joins/common_functions.h
 fi
 
 python3 jobdone.py
