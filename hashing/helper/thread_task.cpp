@@ -53,15 +53,15 @@ void *THREAD_TASK_NOSHUFFLE(void *param) {
   START_MEASURE((args->timer))
 #endif
 
-#ifdef PERF_UARCH
-    auto curtime = std::chrono::steady_clock::now();
-    // dump the pid outside, and attach vtune for performance measurement
-    string path = "/data1/xtra/time_end_" + std::to_string(args->exp_id) + ".txt";
-    auto fp = fopen(path.c_str(), "w");
-    setbuf(fp,NULL);
-    fprintf(fp, "%ld\n", curtime);
-    fflush(fp);
-#endif
+//#ifdef PERF_UARCH
+//    auto curtime = std::chrono::steady_clock::now();
+//    // dump the pid outside, and attach vtune for performance measurement
+//    string path = "/data1/xtra/time_end_" + std::to_string(args->exp_id) + ".txt";
+//    auto fp = fopen(path.c_str(), "w");
+//    setbuf(fp,NULL);
+//    fprintf(fp, "%ld\n", curtime);
+//    fflush(fp);
+//#endif
 
   fetcher->fetchStartTime = args->startTS; // set the fetch starting time.
 #ifdef PERF_COUNTERS
