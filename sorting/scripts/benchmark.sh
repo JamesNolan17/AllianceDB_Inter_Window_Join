@@ -28,17 +28,6 @@ function benchmarkRun() {
   if [[ $? -eq 139 ]]; then echo "oops, sigsegv" exit 1; fi
 }
 
-#function perfUarchBenchmarkRun() {
-##  #####native execution
-##  echo "==benchmark:$benchmark -a $algo -t $ts -w $WINDOW_SIZE -r $RSIZE -s $SSIZE -R $RPATH -S $SPATH -J $RKEY -K $SKEY -L $RTS -M $STS -n $Threads -B 1 -t 1 -g $gap -o /data1/xtra/results/breakdown/perf_$id.csv -I $id== "
-#  #echo 3 >/proc/sys/vm/drop_caches
-#  perf stat -I10 -x, -a --topdown  -o /data1/xtra/results/breakdown/perf_$id.csv ../sorting -a $algo  -t $ts -w $WINDOW_SIZE -r $RSIZE -s $SSIZE -R $RPATH -S $SPATH -J $RKEY -K $SKEY -L $RTS -M $STS -n $Threads -B 1 -t 1 -g $gap -I $id
-##  perf stat -I10 -a -x, -o /data1/xtra/results/breakdown/perf_a_$id.csv -e cache-references,cache-misses,cycles,instructions,branches,faults,migrations ../sorting -a $algo  -t $ts -w $WINDOW_SIZE -r $RSIZE -s $SSIZE -R $RPATH -S $SPATH -J $RKEY -K $SKEY -L $RTS -M $STS -n $Threads -B 1 -t 1 -g $gap -I $id
-##  vtune -collect uarch-expoloration XXX
-##  toplev.py -I 10 -l2  -a -x, -o /data1/xtra/results/breakdown/perf_a_$id.csv ../sorting -a $algo -t $ts -w $WINDOW_SIZE -r $RSIZE -s $SSIZE -R $RPATH -S $SPATH -J $RKEY -K $SKEY -L $RTS -M $STS -n $Threads -B 1 -t 1 -g $gap -I $id
-#  if [[ $? -eq 139 ]]; then echo "oops, sigsegv" exit 1; fi
-#}
-
 function perfUarchBenchmarkRun() {
   #  #####native execution
   #  echo "==benchmark:$benchmark -a $algo -t $ts -w $WINDOW_SIZE -r $RSIZE -s $SSIZE -R $RPATH -S $SPATH -J $RKEY -K $SKEY -L $RTS -M $STS -n $Threads -B 1 -t 1 -g $gap -o /data1/xtra/results/breakdown/perf_$id.csv -I $id== "
@@ -76,17 +65,42 @@ function KimRun() {
   ../sorting -a $algo -t $ts -w $WINDOW_SIZE -e $STEP_SIZE -q $STEP_SIZE_S -l $INTERVAL -d $distrbution -z $skew -D $TS_DISTRIBUTION -Z $ZIPF_FACTOR -n $Threads -W $FIXS -g $gap -P $DD -I $id
 }
 
+function KimProfileRun() {
+  #####native execution
+  echo "==benchmark:$benchmark -a $algo -t $ts -w $WINDOW_SIZE -e $STEP_SIZE -q $STEP_SIZE_S -l $INTERVAL -d $distrbution -z $skew -D $TS_DISTRIBUTION -Z $ZIPF_FACTOR -n $Threads -g $gap -P $DD -W $FIXS -I $id =="
+  #echo 3 >/proc/sys/vm/drop_caches
+  if [ ! -z "$PERF_CONF" -a "$PERF_CONF"!=" " ]; then
+    ../sorting -a $algo -t $ts -w $WINDOW_SIZE -e $STEP_SIZE -q $STEP_SIZE_S -l $INTERVAL -d $distrbution -z $skew -D $TS_DISTRIBUTION -Z $ZIPF_FACTOR -n $Threads -W $FIXS -g $gap -P $DD -o /data1/xtra/results/breakdown/profile_$id.txt -p $PERF_CONF -I $id
+  else
+    ../sorting -a $algo -t $ts -w $WINDOW_SIZE -e $STEP_SIZE -q $STEP_SIZE_S -l $INTERVAL -d $distrbution -z $skew -D $TS_DISTRIBUTION -Z $ZIPF_FACTOR -n $Threads -W $FIXS -g $gap -P $DD -o /data1/xtra/results/breakdown/profile_$id.txt -I $id
+  fi
+}
+
 function PARTITION_ONLY() {
   sed -i -e "s/#define JOIN/#define NO_JOIN/g" ../joins/common_functions.h
   sed -i -e "s/#define SORT/#define NO_SORT/g" ../joins/common_functions.h
+  sed -i -e "s/#define NO_PARTITION/#define PARTITION/g" ../joins/common_functions.h
+  sed -i -e "s/#define OVERVIEW/#define NO_OVERVIEW/g" ../joins/common_functions.h
 }
 function PARTITION_BUILD_SORT() {
   sed -i -e "s/#define JOIN/#define NO_JOIN/g" ../joins/common_functions.h
   sed -i -e "s/#define NO_SORT/#define SORT/g" ../joins/common_functions.h
+  sed -i -e "s/#define PARTITION/#define NO_PARTITION/g" ../joins/common_functions.h
+  sed -i -e "s/#define OVERVIEW/#define NO_OVERVIEW/g" ../joins/common_functions.h
 }
 function PARTITION_BUILD_SORT_MERGE_JOIN() {
   sed -i -e "s/#define NO_JOIN/#define JOIN/g" ../joins/common_functions.h
   sed -i -e "s/#define SORT/#define NO_SORT/g" ../joins/common_functions.h
+#  sed -i -e "s/#define NO_PARTITION/#define PARTITION/g" ../joins/common_functions.h
+  sed -i -e "s/#define PARTITION/#define NO_PARTITION/g" ../joins/common_functions.h
+  sed -i -e "s/#define OVERVIEW/#define NO_OVERVIEW/g" ../joins/common_functions.h
+}
+
+function OVERVIEW() {
+  sed -i -e "s/#define JOIN/#define NO_JOIN/g" ../joins/common_functions.h
+  sed -i -e "s/#define SORT/#define NO_SORT/g" ../joins/common_functions.h
+  sed -i -e "s/#define PARTITION/#define NO_PARTITION/g" ../joins/common_functions.h
+  sed -i -e "s/#define NO_OVERVIEW/#define OVERVIEW/g" ../joins/common_functions.h
 }
 
 function SetStockParameters() { #matches: 15595000. #inputs= 60527 + 77227
@@ -171,289 +185,289 @@ compile
 timestamp=$(date +%Y%m%d-%H%M)
 output=test$timestamp.txt
 
-## APP_Bench.
-#APP_BENCH=1
-#if [ $APP_BENCH == 1 ]; then
-#  sed -i -e "s/#define NO_TIMING/#define TIMING/g" ../joins/common_functions.h            #enable time measurement
-#  sed -i -e "s/#define PERF_COUNTERS/#define NO_PERF_COUNTERS/g" ../utils/perf_counters.h #disable hardware counters
-#  profile_breakdown=1
-#  compile=1
-#  for algo in m-way m-pass; do
-#    for benchmark in "Stock" "Rovio" "YSB" "DEBS"; do #
-#      case "$benchmark" in
-#      "Stock")
-#        id=38
-#        ResetParameters
-#        SetStockParameters
-#        benchmarkRun
-#        ;;
-#      "Rovio") #matches:
-#        id=39
-#        ResetParameters
-#        SetRovioParameters
-#        benchmarkRun
-#        ;;
-#      "YSB")
-#        id=40
-#        ResetParameters
-#        SetYSBParameters
-#        benchmarkRun
-#        ;;
-#      "DEBS")
-#        id=41
-#        ResetParameters
-#        SetDEBSParameters
-#        benchmarkRun
-#        ;;
-#      esac
-#    done
-#  done
-#fi
-#
-##MICRO benchmark.
-#MICRO_BENCH=1
-#if [ $MICRO_BENCH == 1 ]; then
-#  sed -i -e "s/#define NO_TIMING/#define TIMING/g" ../joins/common_functions.h            #enable time measurement
-#  sed -i -e "s/#define PERF_COUNTERS/#define NO_PERF_COUNTERS/g" ../utils/perf_counters.h #disable hardware counters
-#  profile_breakdown=0
-#  compile=0
-#  for algo in m-way m-pass; do
-#    for benchmark in "AR" "RAR" "AD" "KD" "WS" "DD"; do #
-#      case "$benchmark" in
-#      # Batch -a SHJ_JM_NP -n 8 -t 1 -w 1000 -e 1000 -l 10 -d 0 -Z 1
-#      "AR") #test arrival rate and assume both inputs have same arrival rate.
-#        id=0
-#        ResetParameters
-#        FIXS=0 #varying both.
-#        ts=1   # stream case
-#        # step size should be bigger than nthreads
-#        for STEP_SIZE in 1600 3200 6400 12800 25600; do
-#          #WINDOW_SIZE=$(expr $DEFAULT_WINDOW_SIZE \* $DEFAULT_STEP_SIZE / $STEP_SIZE) #ensure relation size is the same.
-#          echo relation size is $(expr $WINDOW_SIZE / $INTERVAL \* $STEP_SIZE)
-#          gap=$(($STEP_SIZE / 500 * $WINDOW_SIZE))
-#          KimRun
-#          let "id++"
-#        done
-#        ;;
-#      "RAR") #test relative arrival rate when R is small
-#        id=5
-#        ResetParameters
-#        FIXS=1
-#        echo test relative arrival rate 5 - 9
-#        ts=1 # stream case
-#        # step size should be bigger than nthreads
-#        # remember to fix the relation size of S.
-#        STEP_SIZE=1600
-#        for STEP_SIZE_S in 1600 3200 6400 12800 25600; do
-#          #        WINDOW_SIZE=$(expr $DEFAULT_WINDOW_SIZE \* $DEFAULT_STEP_SIZE / $STEP_SIZE) #ensure relation size is the same.
-#          echo relation size is $(expr $WINDOW_SIZE / $INTERVAL \* $STEP_SIZE)
-#          gap=$(($STEP_SIZE / 500 * $WINDOW_SIZE))
-#          KimRun
-#          let "id++"
-#        done
-#        ;;
-#      "AD") #test arrival distribution
-#        id=10
-#        ResetParameters
-#        FIXS=1
-#        STEP_SIZE=1600
-#        STEP_SIZE_S=1600
-#        TS_DISTRIBUTION=2
-#        echo test varying timestamp distribution 10 - 14
-#        for ZIPF_FACTOR in 0 0.4 0.8 1.2 1.6; do #
-#          gap=$(($STEP_SIZE / 500 * $WINDOW_SIZE))
-#          KimRun
-#          let "id++"
-#        done
-#        ;;
-#      "KD") #test key distribution
-#        id=15
-#        ## Figure 4
-#        ResetParameters
-#        FIXS=1
-#        STEP_SIZE=12800
-#        STEP_SIZE_S=12800
-#        gap=$(($STEP_SIZE / 500 * $WINDOW_SIZE))
-#        echo test varying key distribution 15 - 19
-#        distrbution=2 #varying zipf factor
-#        for skew in 0 0.4 0.8 1.2 1.6; do
-#          if [ $skew == 1.2 ]; then
-#            gap=100
-#          fi
-#          if [ $skew == 1.6 ]; then
-#            gap=1
-#          fi
-#          KimRun
-#          let "id++"
-#        done
-#        ;;
-#      "WS") #test window size
-#        id=20
-#        ## Figure 5
-#        ResetParameters
-#        FIXS=1
-#        STEP_SIZE=6400
-#        STEP_SIZE_S=6400
-#        echo test varying window size 20 - 24
-#        for WINDOW_SIZE in 500 1000 1500 2000 2500; do
-#          gap=$(($STEP_SIZE / 1000 * $WINDOW_SIZE))
-#          KimRun
-#          let "id++"
-#        done
-#        ;;
-#      "DD") #test data duplication
-#        id=25
-#        ## Figure 6
-#        ResetParameters
-#        FIXS=1
-#        ts=1
-#        STEP_SIZE=6400
-#        STEP_SIZE_S=6400
-#        echo test DD 25 - 28
-#        for DD in 1 100 1000 10000; do
-#          gap=$(($STEP_SIZE * $WINDOW_SIZE * $DD / 500))
-#          KimRun
-#          let "id++"
-#        done
-#        ;;
-#      esac
-#    done
-#  done
-#fi
-#
-##SCLAE benchmark.
-#SCALE_STUDY=1
-#if [ $SCALE_STUDY == 1 ]; then
-#  sed -i -e "s/#define NO_TIMING/#define TIMING/g" ../joins/common_functions.h            #enable time measurement
-#  sed -i -e "s/#define PERF_COUNTERS/#define NO_PERF_COUNTERS/g" ../utils/perf_counters.h #disable hardware counters
-#  profile_breakdown=0
-#  compile=0
-#  for algo in m-way m-pass; do
-#    for benchmark in "ScaleStock" "ScaleRovio" "ScaleYSB" "ScaleDEBS"; do #
-#      case "$benchmark" in
-#      "ScaleStock")
-#        id=42
-#        ResetParameters
-#        SetStockParameters
-#        echo test scalability of Stock 42 - 45
-#        for Threads in 1 2 4 8; do
-#          benchmarkRun
-#          let "id++"
-#        done
-#        ;;
-#      "ScaleRovio")
-#        id=46
-#        ResetParameters
-#        SetRovioParameters
-#        echo test scalability 46 - 49
-#        for Threads in 1 2 4 8; do
-#          benchmarkRun
-#          let "id++"
-#        done
-#        ;;
-#      "ScaleYSB")
-#        id=50
-#        ResetParameters
-#        SetYSBParameters
-#        echo test scalability 50 - 53
-#        for Threads in 1 2 4 8; do
-#          benchmarkRun
-#          let "id++"
-#        done
-#        ;;
-#      "ScaleDEBS")
-#        id=54
-#        ResetParameters
-#        SetDEBSParameters
-#        echo test scalability 54 - 57
-#        for Threads in 1 2 4 8; do
-#          benchmarkRun
-#          let "id++"
-#        done
-#        ;;
-#      esac
-#    done
-#  done
-#fi
-#
-### MICRO STUDY
-#PROFILE_MICRO=1
-#if [ $PROFILE_MICRO == 1 ]; then
-#  sed -i -e "s/#define NO_TIMING/#define TIMING/g" ../joins/common_functions.h            #enable time measurement
-#  sed -i -e "s/#define PERF_COUNTERS/#define NO_PERF_COUNTERS/g" ../utils/perf_counters.h #disable hardware counters
-#  for benchmark in "SIMD_STUDY"; do #
-#    case "$benchmark" in
-#    "SIMD_STUDY")
-#      id=100
-#      ResetParameters
-#      ts=0 # batch data.
-#      echo SIMD 100-103
-#      PARTITION_ONLY
-#      compile=1
-#      for algo in "m-way" "m-pass"; do
-#        for scalar in 0 1; do
-#          sed -i -e "s/scalarflag [[:alnum:]]*/scalarflag $scalar/g" ../joins/common_functions.h
-#          compile
-#          KimRun
-#          let "id++"
-#        done
-#      done
-#      PARTITION_BUILD_SORT
-#      compile=1
-#      for algo in "m-way" "m-pass"; do
-#        for scalar in 0 1; do
-#          sed -i -e "s/scalarflag [[:alnum:]]*/scalarflag $scalar/g" ../joins/common_functions.h
-#          compile
-#          KimRun
-#          let "id++"
-#        done
-#      done
-#      ;;
-#    esac
-#  done
-#fi
-#
-#PROFILE_YSB=1 ## Cache misses profiling with YSB, please run the program with sudo
-#if [ $PROFILE_YSB == 1 ]; then
-#  sed -i -e "s/#define TIMING/#define NO_TIMING/g" ../joins/common_functions.h #disable time measurement
-#  sed -i -e "s/#define NO_PERF_COUNTERS/#define PERF_COUNTERS/g" ../utils/perf_counters.h
-#  for benchmark in "YSB"; do
-#    id=201
-#    PARTITION_ONLY
-#    compile=1
-#    compile
-#    for algo in "m-way" "m-pass"; do
-#      case "$benchmark" in
-#      "YSB")
-#        ResetParameters
-#        SetYSBParameters
-#        rm /data1/xtra/results/breakdown/profile_$id.txt
-#        benchmarkRun
-#        ;;
-#      esac
-#      let "id++"
-#    done
-#
-#    PARTITION_BUILD_SORT_MERGE_JOIN
-#    compile=1
-#    compile
-#    for algo in "m-way" "m-pass"; do
-#      case "$benchmark" in
-#      "YSB")
-#        ResetParameters
-#        SetYSBParameters
-#        rm /data1/xtra/results/breakdown/profile_$id.txt
-#        benchmarkRun
-#        ;;
-#      esac
-#      let "id++"
-#    done
-#  done
-#  sed -i -e "s/#define PERF_COUNTERS/#define NO_PERF_COUNTERS/g" ../utils/perf_counters.h
-#fi
+# APP_Bench.
+APP_BENCH=0
+if [ $APP_BENCH == 1 ]; then
+  sed -i -e "s/#define NO_TIMING/#define TIMING/g" ../joins/common_functions.h            #enable time measurement
+  sed -i -e "s/#define PERF_COUNTERS/#define NO_PERF_COUNTERS/g" ../utils/perf_counters.h #disable hardware counters
+  profile_breakdown=1
+  compile=1
+  for algo in m-way m-pass; do
+    for benchmark in "Stock" "Rovio" "YSB" "DEBS"; do #
+      case "$benchmark" in
+      "Stock")
+        id=38
+        ResetParameters
+        SetStockParameters
+        benchmarkRun
+        ;;
+      "Rovio") #matches:
+        id=39
+        ResetParameters
+        SetRovioParameters
+        benchmarkRun
+        ;;
+      "YSB")
+        id=40
+        ResetParameters
+        SetYSBParameters
+        benchmarkRun
+        ;;
+      "DEBS")
+        id=41
+        ResetParameters
+        SetDEBSParameters
+        benchmarkRun
+        ;;
+      esac
+    done
+  done
+fi
+
+#MICRO benchmark.
+MICRO_BENCH=0
+if [ $MICRO_BENCH == 1 ]; then
+  sed -i -e "s/#define NO_TIMING/#define TIMING/g" ../joins/common_functions.h            #enable time measurement
+  sed -i -e "s/#define PERF_COUNTERS/#define NO_PERF_COUNTERS/g" ../utils/perf_counters.h #disable hardware counters
+  profile_breakdown=0
+  compile=0
+  for algo in m-way m-pass; do
+    for benchmark in "AR" "RAR" "AD" "KD" "WS" "DD"; do #
+      case "$benchmark" in
+      # Batch -a SHJ_JM_NP -n 8 -t 1 -w 1000 -e 1000 -l 10 -d 0 -Z 1
+      "AR") #test arrival rate and assume both inputs have same arrival rate.
+        id=0
+        ResetParameters
+        FIXS=0 #varying both.
+        ts=1   # stream case
+        # step size should be bigger than nthreads
+        for STEP_SIZE in 1600 3200 6400 12800 25600; do
+          #WINDOW_SIZE=$(expr $DEFAULT_WINDOW_SIZE \* $DEFAULT_STEP_SIZE / $STEP_SIZE) #ensure relation size is the same.
+          echo relation size is $(expr $WINDOW_SIZE / $INTERVAL \* $STEP_SIZE)
+          gap=$(($STEP_SIZE / 500 * $WINDOW_SIZE))
+          KimRun
+          let "id++"
+        done
+        ;;
+      "RAR") #test relative arrival rate when R is small
+        id=5
+        ResetParameters
+        FIXS=1
+        echo test relative arrival rate 5 - 9
+        ts=1 # stream case
+        # step size should be bigger than nthreads
+        # remember to fix the relation size of S.
+        STEP_SIZE=1600
+        for STEP_SIZE_S in 1600 3200 6400 12800 25600; do
+          #        WINDOW_SIZE=$(expr $DEFAULT_WINDOW_SIZE \* $DEFAULT_STEP_SIZE / $STEP_SIZE) #ensure relation size is the same.
+          echo relation size is $(expr $WINDOW_SIZE / $INTERVAL \* $STEP_SIZE)
+          gap=$(($STEP_SIZE / 500 * $WINDOW_SIZE))
+          KimRun
+          let "id++"
+        done
+        ;;
+      "AD") #test arrival distribution
+        id=10
+        ResetParameters
+        FIXS=1
+        STEP_SIZE=1600
+        STEP_SIZE_S=1600
+        TS_DISTRIBUTION=2
+        echo test varying timestamp distribution 10 - 14
+        for ZIPF_FACTOR in 0 0.4 0.8 1.2 1.6; do #
+          gap=$(($STEP_SIZE / 500 * $WINDOW_SIZE))
+          KimRun
+          let "id++"
+        done
+        ;;
+      "KD") #test key distribution
+        id=15
+        ## Figure 4
+        ResetParameters
+        FIXS=1
+        STEP_SIZE=12800
+        STEP_SIZE_S=12800
+        gap=$(($STEP_SIZE / 500 * $WINDOW_SIZE))
+        echo test varying key distribution 15 - 19
+        distrbution=2 #varying zipf factor
+        for skew in 0 0.4 0.8 1.2 1.6; do
+          if [ $skew == 1.2 ]; then
+            gap=100
+          fi
+          if [ $skew == 1.6 ]; then
+            gap=1
+          fi
+          KimRun
+          let "id++"
+        done
+        ;;
+      "WS") #test window size
+        id=20
+        ## Figure 5
+        ResetParameters
+        FIXS=1
+        STEP_SIZE=6400
+        STEP_SIZE_S=6400
+        echo test varying window size 20 - 24
+        for WINDOW_SIZE in 500 1000 1500 2000 2500; do
+          gap=$(($STEP_SIZE / 1000 * $WINDOW_SIZE))
+          KimRun
+          let "id++"
+        done
+        ;;
+      "DD") #test data duplication
+        id=25
+        ## Figure 6
+        ResetParameters
+        FIXS=1
+        ts=1
+        STEP_SIZE=6400
+        STEP_SIZE_S=6400
+        echo test DD 25 - 28
+        for DD in 1 100 1000 10000; do
+          gap=$(($STEP_SIZE * $WINDOW_SIZE * $DD / 500))
+          KimRun
+          let "id++"
+        done
+        ;;
+      esac
+    done
+  done
+fi
+
+#SCLAE benchmark.
+SCALE_STUDY=0
+if [ $SCALE_STUDY == 1 ]; then
+  sed -i -e "s/#define NO_TIMING/#define TIMING/g" ../joins/common_functions.h            #enable time measurement
+  sed -i -e "s/#define PERF_COUNTERS/#define NO_PERF_COUNTERS/g" ../utils/perf_counters.h #disable hardware counters
+  profile_breakdown=0
+  compile=0
+  for algo in m-way m-pass; do
+    for benchmark in "ScaleStock" "ScaleRovio" "ScaleYSB" "ScaleDEBS"; do #
+      case "$benchmark" in
+      "ScaleStock")
+        id=42
+        ResetParameters
+        SetStockParameters
+        echo test scalability of Stock 42 - 45
+        for Threads in 1 2 4 8; do
+          benchmarkRun
+          let "id++"
+        done
+        ;;
+      "ScaleRovio")
+        id=46
+        ResetParameters
+        SetRovioParameters
+        echo test scalability 46 - 49
+        for Threads in 1 2 4 8; do
+          benchmarkRun
+          let "id++"
+        done
+        ;;
+      "ScaleYSB")
+        id=50
+        ResetParameters
+        SetYSBParameters
+        echo test scalability 50 - 53
+        for Threads in 1 2 4 8; do
+          benchmarkRun
+          let "id++"
+        done
+        ;;
+      "ScaleDEBS")
+        id=54
+        ResetParameters
+        SetDEBSParameters
+        echo test scalability 54 - 57
+        for Threads in 1 2 4 8; do
+          benchmarkRun
+          let "id++"
+        done
+        ;;
+      esac
+    done
+  done
+fi
+
+## MICRO STUDY
+PROFILE_MICRO=0
+if [ $PROFILE_MICRO == 1 ]; then
+  sed -i -e "s/#define NO_TIMING/#define TIMING/g" ../joins/common_functions.h            #enable time measurement
+  sed -i -e "s/#define PERF_COUNTERS/#define NO_PERF_COUNTERS/g" ../utils/perf_counters.h #disable hardware counters
+  for benchmark in "SIMD_STUDY"; do #
+    case "$benchmark" in
+    "SIMD_STUDY")
+      id=100
+      ResetParameters
+      ts=0 # batch data.
+      echo SIMD 100-103
+      PARTITION_ONLY
+      compile=1
+      for algo in "m-way" "m-pass"; do
+        for scalar in 0 1; do
+          sed -i -e "s/scalarflag [[:alnum:]]*/scalarflag $scalar/g" ../joins/common_functions.h
+          compile
+          KimRun
+          let "id++"
+        done
+      done
+      PARTITION_BUILD_SORT
+      compile=1
+      for algo in "m-way" "m-pass"; do
+        for scalar in 0 1; do
+          sed -i -e "s/scalarflag [[:alnum:]]*/scalarflag $scalar/g" ../joins/common_functions.h
+          compile
+          KimRun
+          let "id++"
+        done
+      done
+      ;;
+    esac
+  done
+fi
+
+PROFILE_YSB=0 ## Cache misses profiling with YSB, please run the program with sudo
+if [ $PROFILE_YSB == 1 ]; then
+  sed -i -e "s/#define TIMING/#define NO_TIMING/g" ../joins/common_functions.h #disable time measurement
+  sed -i -e "s/#define NO_PERF_COUNTERS/#define PERF_COUNTERS/g" ../utils/perf_counters.h
+  for benchmark in "YSB"; do
+    id=201
+    PARTITION_ONLY
+    compile=1
+    compile
+    for algo in "m-way" "m-pass"; do
+      case "$benchmark" in
+      "YSB")
+        ResetParameters
+        SetYSBParameters
+        rm /data1/xtra/results/breakdown/profile_$id.txt
+        benchmarkRun
+        ;;
+      esac
+      let "id++"
+    done
+
+    PARTITION_BUILD_SORT_MERGE_JOIN
+    compile=1
+    compile
+    for algo in "m-way" "m-pass"; do
+      case "$benchmark" in
+      "YSB")
+        ResetParameters
+        SetYSBParameters
+        rm /data1/xtra/results/breakdown/profile_$id.txt
+        benchmarkRun
+        ;;
+      esac
+      let "id++"
+    done
+  done
+  sed -i -e "s/#define PERF_COUNTERS/#define NO_PERF_COUNTERS/g" ../utils/perf_counters.h
+fi
 
 #export PATH=~/workspace/pmu-tools:$PATH
-PERF_YSB=1 ## Hardware Counters profiling with YSB, please run the program with sudo
+PERF_YSB=0 ## Hardware Counters profiling with YSB, please run the program with sudo
 if [ $PERF_YSB == 1 ]; then
   sed -i -e "s/#define TIMING/#define NO_TIMING/g" ../joins/common_functions.h #disable time measurement
   sed -i -e "s/#define NO_PERF_UARCH/#define PERF_UARCH/g" ../joins/common_functions.h
@@ -479,22 +493,37 @@ if [ $PERF_YSB == 1 ]; then
       let "id++"
     done
   done
+  sed -i -e "s/#define PERF_UARCH/#define NO_PERF_UARCH/g" ../joins/common_functions.h
+fi
 
-#  for benchmark in "YSB"; do #"YSB
-#    id=400
-#    for algo in "m-way" "m-pass"; do
-#      case "$benchmark" in
-#      "YSB")
-#        ResetParameters
-#        SetYSBParameters
-#        rm /data1/xtra/results/breakdown/perf_$id.csv
-#        perfUtilBenchmarkRun
-#        ;;
-#      esac
-#      let "id++"
-#    done
-#  done
-# TODO: reset back all parameters, should have a general function to do this.
-#  sed -i -e "s/#define NO_TIMING/#define TIMING/g" ../joins/common_functions.h #disable time measurement
-#  sed -i -e "s/#define PERF_UARCH/#define NO_PERF_UARCH/g" ../joins/common_functions.h
+# profiling for figure 21b. TODO: maybe need to change a flag here
+PROFILE_KIM=1 ## Cache misses profiling with YSB, please run the program with sudo
+if [ $PROFILE_KIM == 1 ]; then
+  sed -i -e "s/#define TIMING/#define NO_TIMING/g" ../joins/common_functions.h #disable time measurement
+  sed -i -e "s/#define NO_PERF_COUNTERS/#define PERF_COUNTERS/g" ../utils/perf_counters.h
+  for benchmark in "Kim"; do
+    id=400
+    OVERVIEW
+    compile=1
+    compile
+    for algo in "m-pass"; do # "m-way" "m-pass"
+      case "$benchmark" in
+      "Kim")
+        ResetParameters
+        STEP_SIZE=1280
+        STEP_SIZE_S=12800
+        WINDOW_SIZE=10000
+        rm /data1/xtra/results/breakdown/profile_$id.txt
+        PERF_CONF=/tmp/tmp.wNE3Zlw9Bq/pcm.cfg
+        KimProfileRun
+        PERF_CONF=/tmp/tmp.wNE3Zlw9Bq/pcm2.cfg
+        KimProfileRun
+        PERF_CONF=""
+        KimProfileRun
+        ;;
+      esac
+      let "id++"
+    done
+  done
+  sed -i -e "s/#define PERF_COUNTERS/#define NO_PERF_COUNTERS/g" ../utils/perf_counters.h
 fi

@@ -395,6 +395,9 @@ execution
 #include "config.h" /* autoconf header */
 #include "utils/types.h"
 #include <chrono>
+#include <sys/resource.h>
+
+
 
 using namespace std::chrono;
 
@@ -577,6 +580,32 @@ void createRelation(relation_t *rel, relation_payload_t *relPl, int32_t key,
   printf("OK \n");
 }
 
+/**
+ * Just initialize mem. to 0 for making sure it will be allocated numa-local
+ */
+void *
+memory_calculator_thread(void *args) {
+    uint64_t exp_id = (uint64_t)args;
+    struct rusage r_usage;
+    int counter = 0;
+    string path = "/data1/xtra/mem/mem_stat_" + std::to_string(exp_id) + ".txt";
+    auto fp = fopen(path.c_str(), "w");
+    setbuf(fp,NULL);
+
+    while(counter < 10000) {
+        int ret = getrusage(RUSAGE_SELF,&r_usage);
+        if(ret == 0) {
+            fprintf(fp, "Memory usage: %ld kilobytes\n",r_usage.ru_maxrss);
+            fflush(fp);
+        }
+        else
+            printf("Error in getrusage. errno = %d\n", errno);
+        counter++;
+        usleep(10000);
+    }
+    return 0;
+}
+
 int main(int argc, char *argv[]) {
 
   relation_t relR;
@@ -639,19 +668,6 @@ int main(int argc, char *argv[]) {
 
   parse_args(argc, argv, &cmd_params);
 
-//    // TODO: move this to common function? make it controlable from scripts
-//#define PERF_UARCH
-//
-//#ifdef PERF_UARCH
-//    auto curtime = std::chrono::steady_clock::now();
-//    // dump the pid outside, and attach vtune for performance measurement
-//    string path = "/data1/xtra/time_start_" + std::to_string(cmd_params.exp_id) + ".txt";
-//    auto fp = fopen(path.c_str(), "w");
-//    setbuf(fp,NULL);
-//    fprintf(fp, "%ld\n", curtime);
-//    fflush(fp);
-//#endif
-
   // reset relation size according to our settings.
   //    cmd_params.r_size = cmd_params.window_size / cmd_params.interval *
   //    cmd_params.step_sizeR; cmd_params.s_size = cmd_params.window_size /
@@ -669,6 +685,7 @@ int main(int argc, char *argv[]) {
   PCM_CONFIG = cmd_params.perfconf;
   PCM_OUT = cmd_params.perfout;
 #endif
+
   seed_generator(cmd_params.r_seed);
 
   /* create relation R */
@@ -728,9 +745,17 @@ int main(int argc, char *argv[]) {
     setbuf(fp,NULL);
     fprintf(fp, "%d\n", getpid());
     fflush(fp);
+
+    // create a thread for memory consumption
+    pthread_t thread_id;
+    uint32_t rv = pthread_create(&thread_id, nullptr, memory_calculator_thread, (void *) cmd_params.exp_id);
+    if (rv) {
+        fprintf(stderr, "[ERROR] pthread_create() return code is %d\n", rv);
+        exit(-1);
+    }
+
     sleep(10);
 #endif
-
 
     /* Run the selected join algorithm */
   fprintf(stdout, "[INFO ] Running join algorithm %s ...\n",
@@ -746,6 +771,7 @@ int main(int argc, char *argv[]) {
   if (result != NULL) {
     fprintf(stdout, "\n[INFO ] Results = %ld. DONE.\n", result->totalresults);
   }
+
 
 #if (defined(PERSIST_RELATIONS) && defined(JOIN_MATERIALIZE))
   if (result != NULL) {
@@ -778,6 +804,7 @@ int main(int argc, char *argv[]) {
   delete_relation_payload(relS.payload);
 
   return 0;
+
 }
 
 /* command line handling functions */

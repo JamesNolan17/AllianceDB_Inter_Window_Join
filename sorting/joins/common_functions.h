@@ -18,13 +18,17 @@
 //#define DEBUG
 //#define JOIN_MATERIALIZE
 #define TIMING
-#define JOIN
-#define SORT
+
+#define NO_PARTITION
+#define NO_JOIN
+#define NO_SORT
+
+#define OVERVIEW
 
 #define NO_PERF_UARCH
 
 #define DEBUG_SORT_CHECK 0
-#define scalarflag 0
+#define scalarflag 1
 
 #define SKEW_HANDLING 1
 #define SKEW_DECOMPOSE_MARGIN (1.10) /* 10% margin */

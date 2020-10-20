@@ -96,6 +96,8 @@ PCM_initPerformanceMonitor(const char * pcmcfg, const char * pcmout)
                  >> hex >> MyEvents[numEvents].umask_value;
             numEvents++;
         }
+
+        printf("#### num of events: %d\n", numEvents);
         inpf.close();
 
         if (pcmInstance->good())
@@ -197,6 +199,14 @@ PCM_printResults()
                << getCyclesLostDueL2CacheMisses(before_state, after_state) << endl;
         (*out) << "CyclesLostDueL3CacheMisses "
                << getCyclesLostDueL3CacheMisses(before_state, after_state) << endl;
+
+        (*out) << "MemoryBandwidth "
+               << getLocalMemoryBW(before_state, after_state) << endl;
+
+        (*out) << "CPUCycles "
+               << getCycles(before_state, after_state) << endl;
+
+
 #if PER_CORE==0
         (*out) << "BytesFromMC " << getBytesReadFromMC(before_state, after_state) << endl;
         (*out) << "BytesWrittenToMC " << getBytesWrittenToMC(before_state, after_state) << endl;
@@ -259,8 +269,9 @@ PCM_printAccumulators()
   ofstream outf;
 
   if(PCM_OUT) {
-    outf.open(PCM_OUT, ios::app);
-    out = &outf;
+      outf.open(PCM_OUT, ios::app);
+//      outf.open(PCM_OUT, fstream::app);
+        out = &outf;
   }
   else {
     out = &cout;

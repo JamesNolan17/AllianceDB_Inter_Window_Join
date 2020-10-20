@@ -15,9 +15,9 @@ while true
   pid=$(<$expDir/sink_threadId.txt)
   echo "start perf $pid..."
   #perf stat -e cache-references,cache-misses,cycles,instructions,branches,faults,migrations -p $pid
-#  vtune -collect uarch-exploration -target-pid $pid
-  vtune -collect memory-consumption -target-pid $pid
-#  vtune -R summary -report-output $expDir/uarch/perf_$id.csv -format csv -csv-delimiter tab
+  vtune -collect uarch-exploration -target-pid $pid
+#  vtune -collect memory-consumption -data-limit 0 -target-pid $pid
+  vtune -R summary -report-output $expDir/uarch/perf_$id.csv -format csv -csv-delimiter tab
   rm $expDir/sink_threadId.txt
   echo "end perf $id"
   let "id++"

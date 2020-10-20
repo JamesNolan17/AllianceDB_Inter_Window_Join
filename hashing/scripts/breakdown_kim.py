@@ -228,7 +228,12 @@ def ReadFile(id):
             y[3][j] = 0
             y[4][j] = 0
             j +=1
+
+    # reorder value 0,1 and 2,3
+    for val in y:
+        val[0], val[1], val[2], val[3] = val[2], val[3], val[0], val[1]
     print(y)
+
     return y, max_value
 
 
@@ -250,7 +255,7 @@ if __name__ == "__main__":
     # x_values = ['MWAY', 'MPASS', 'NPJ', 'PRJ',
     #             'SHJ$^{JM}$', 'SHJ$^{JB}$', 'PMJ$^{JM}$', 'PMJ$^{JB}$']
 
-    x_values = ['MWAY', 'MPASS', 'NPJ', 'PRJ',
+    x_values = ['NPJ', 'PRJ', 'MWAY', 'MPASS',
                 '',
                 'SHJ$^{JM}$', 'SHJ$^{JB}$', 'PMJ$^{JM}$', 'PMJ$^{JB}$']  # join time is getting from total - others.
 

@@ -136,10 +136,21 @@ void *sortmergejoin_multiway_thread(void *param) {
 
 //  MSG("Thread-%d started running ... \n", my_tid);
 
-#ifdef NO_JOIN // partition only
+#ifdef OVERVIEW // overview
+    #ifdef PERF_COUNTERS
+    if (my_tid == 0) {
+        PCM_initPerformanceMonitor(NULL, NULL);
+      PCM_start();
+    }
+    BARRIER_ARRIVE(args->barrier, rv);
+#endif
+#endif
+
+#ifdef PARTITION // partition only
 #ifdef PERF_COUNTERS
     if (my_tid == 0) {
-      PCM_initPerformanceMonitor(NULL, NULL);
+        PCM_initPerformanceMonitor(NULL, NULL);
+//        PCM_initPerformanceMonitor(NULL, NULL);
       PCM_start();
     }
     BARRIER_ARRIVE(args->barrier, rv);
@@ -155,20 +166,6 @@ void *sortmergejoin_multiway_thread(void *param) {
         BEGIN_MEASURE_PARTITION(args->timer) /* partitioning start */
     }
 
-//    // TODO: move this to common function? make it controlable from scripts
-//#define PERF_UARCH
-//
-//#ifdef PERF_UARCH
-//    auto curtime = std::chrono::steady_clock::now();
-//    // dump the pid outside, and attach vtune for performance measurement
-//    string path = "/data1/xtra/time_end_" + std::to_string(args->exp_id) + ".txt";
-//    auto fp = fopen(path.c_str(), "w");
-//    setbuf(fp,NULL);
-//    fprintf(fp, "%ld\n", curtime);
-//    fflush(fp);
-//    sleep(10);
-//#endif
-
 #endif
 
     /*************************************************************************
@@ -180,7 +177,7 @@ void *sortmergejoin_multiway_thread(void *param) {
     relation_t **partsS = NULL;
     partitioning_phase(&partsR, &partsS, args);
 
-#ifdef NO_JOIN // partition only
+#ifdef PARTITION // partition only
 #ifdef PERF_COUNTERS
     BARRIER_ARRIVE(args->barrier, rv);
     if (my_tid == 0) {
@@ -384,6 +381,19 @@ void *sortmergejoin_multiway_thread(void *param) {
     if (my_tid == 0) {
         PCM_stop();
         PCM_log("========= 4) results of Multi-Way Joining Phase =========\n");
+        PCM_printResults();
+        PCM_cleanup();
+    }
+#endif
+    BARRIER_ARRIVE(args->barrier, rv);
+#endif
+
+#ifdef OVERVIEW
+    #ifdef PERF_COUNTERS
+    BARRIER_ARRIVE(args->barrier, rv);
+    if (my_tid == 0) {
+        PCM_stop();
+        PCM_log("========= results of Overview =========\n");
         PCM_printResults();
         PCM_cleanup();
     }
