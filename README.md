@@ -19,8 +19,14 @@ All of our experiments can be automatically reproduced by calling a few pre-prep
    ```shell
    [INFO] @ /tmp/tmp.AwnTLdwtaY/utils/perf_counters.cpp:115 Alternatively you can try to reset PMU configuration at your own risk. Try to reset? (y/n)
    ```
-
+   check which program did not call pcm_clean.
+   
 7. auto move pcm.cfg to exp_dir in a unfied scripts. (auto-deploy)
+
+8. automatically set L3 size according to machine specification.
+
+9. update the following configurations accordingly.
+
 
 ## Third-party Lib
 
