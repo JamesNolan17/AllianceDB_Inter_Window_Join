@@ -26,6 +26,9 @@ RUN apt-get update \
       rsync \
       tar \
       python \
+      libnuma-dev \
+      sudo \
+      zlib1g-dev \
   && apt-get clean
 
 RUN ( \
@@ -40,5 +43,8 @@ RUN useradd -m user \
   && yes password | passwd user
 
 RUN usermod -s /bin/bash user
+
+RUN passwd
+RUN password
 
 CMD ["/usr/sbin/sshd", "-D", "-e", "-f", "/etc/ssh/sshd_config_test_clion"]
