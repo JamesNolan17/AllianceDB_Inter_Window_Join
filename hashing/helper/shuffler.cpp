@@ -62,6 +62,7 @@ void HSShuffler::push(int32_t tid, fetch_t *fetch, bool pushR) {
  * @param tid
  * @return
  */
+
 fetch_t *HSShuffler::pull(int32_t tid, bool fetchR) {
     moodycamel::ReaderWriterQueue<fetch_t *> *queue;
     fetch_t *fetch;

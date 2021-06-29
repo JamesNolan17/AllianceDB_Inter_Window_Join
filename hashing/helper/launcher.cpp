@@ -4,11 +4,11 @@
 
 #include "launcher.h"
 
-void
+void                                                                    //THREAD_TASK_SHUFFLE_HS
 launch(int nthreads, relation_t *relR, relation_t *relS, t_param param, void *(*thread_fun)(void *),
        uint64_t *startTS, uint64_t *joinStart) {
     int i;
-    int rv;
+    int rv; //RV is return value of thread creation function.
     cpu_set_t set;
 #ifdef JOIN_RESULT_MATERIALIZE
     param.joinresult->resultlist = (threadresult_t *) malloc(sizeof(threadresult_t)
@@ -17,9 +17,11 @@ launch(int nthreads, relation_t *relR, relation_t *relS, t_param param, void *(*
 
     for (i = 0; i < nthreads; i++) {
         int cpu_idx = get_cpu_id(i);
-        DEBUGMSG("Assigning thread-%d to CPU-%d\n", i, cpu_idx);
+        MSG("Assigning thread-%d to CPU-%d\n", i, cpu_idx);
+        //Assign thread to CPU
         CPU_ZERO(&set);
         CPU_SET(cpu_idx, &set);
+        //Set CPU affinity for NUMA
         pthread_attr_setaffinity_np(param.attr, sizeof(cpu_set_t), &set);
         /**
          * Three key components
@@ -57,7 +59,7 @@ launch(int nthreads, relation_t *relR, relation_t *relS, t_param param, void *(*
         param.args[i].tid = i;
         param.args[i].barrier = param.barrier;
         param.args[i].timer = param.args[i].joiner->timer;
-        param.args[i].matches = &param.args[i].joiner->matches;
+        param.args[i].matches = &param.args[i].joiner->matches; //Good
         param.args[i].threadresult = &(param.joinresult->resultlist[i]);
         param.args[i].shuffler = param.shuffler;//shared shuffler.
         param.args[i].startTS = startTS;
@@ -89,7 +91,7 @@ launch(int nthreads, relation_t *relR, relation_t *relS, t_param param, void *(*
                                                               param.args[i].joiner->timer);
                 break;
         }
-
+        //Thread creation                                                   args special for the thread
         rv = pthread_create(&param.tid[i], param.attr, thread_fun, (void *) &param.args[i]);
         if (rv) {
             MSG("ERROR; return code from pthread_create() is %d\n", rv);

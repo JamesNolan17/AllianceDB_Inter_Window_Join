@@ -304,35 +304,35 @@ main(int argc, char **argv) {
 static struct algo_t algos[] =
         {
 /*** Blocking Joins ***/
-                {"PRO",         PRO}, // The best performing blocking hash join (radix partition optimization).
-                {"RJ_st",       RJ_st}, // Radix Join Single_thread
-                {"PRH",         PRH},
-                {"PRHO",        PRHO},
-                {"NPO",         NPO},
-                {"NPO_st",      NPO_st}, /* NPO single threaded */
+/*** 0 ***/                {"PRO",         PRO}, // The best performing blocking hash join (radix partition optimization).
+/*** 1 ***/                {"RJ_st",       RJ_st}, // Radix Join Single_thread
+/*** 2 ***/                {"PRH",         PRH},
+/*** 3 ***/                {"PRHO",        PRHO},
+/*** 4 ***/                {"NPO",         NPO},
+/*** 5 ***/                {"NPO_st",      NPO_st}, /* NPO single threaded */
 /*** Symmetric Hash Join ***/
-                {"SHJ_st",      SHJ_st}, /* Symmetric hash join single_thread*/
-                {"SHJ_JM_P",    SHJ_JM_P}, /* Symmetric hash join JM Model, Partition*/
-                {"SHJ_JM_NP",   SHJ_JM_NP}, /* Symmetric hash join JM Model, No-Partition*/
-                {"SHJ_JB_NP",   SHJ_JB_NP}, /* Symmetric hash join JB Model, No-Partition*/
-                {"SHJ_JBCR_NP", SHJ_JBCR_NP}, /* Symmetric hash join JB CountRound Model, No-Partition*/
-                {"SHJ_JBCR_P",  SHJ_JBCR_P}, /* Symmetric hash join JB CountRound Model, No-Partition*/
-                {"SHJ_HS_NP",   SHJ_HS_NP}, /* Symmetric hash join HS Model, No-Partition*/
+/*** 6 ***/                {"SHJ_st",      SHJ_st}, /* Symmetric hash join single_thread*/
+/*** 7 ***/                {"SHJ_JM_P",    SHJ_JM_P}, /* Symmetric hash join JM Model, Partition*/
+/*** 8 ***/                {"SHJ_JM_NP",   SHJ_JM_NP}, /* Symmetric hash join JM Model, No-Partition*/
+/*** 9 ***/                {"SHJ_JB_NP",   SHJ_JB_NP}, /* Symmetric hash join JB Model, No-Partition*/
+/***10 ***/                {"SHJ_JBCR_NP", SHJ_JBCR_NP}, /* Symmetric hash join JB CountRound Model, No-Partition*/
+/***11 ***/                {"SHJ_JBCR_P",  SHJ_JBCR_P}, /* Symmetric hash join JB CountRound Model, No-Partition*/
+/***12 ***/                {"SHJ_HS_NP",   SHJ_HS_NP}, /* Symmetric hash join HS Model, No-Partition*/
 /*** Progressive Merge Join ***/
-                {"PMJ_st",      PMJ_st}, /* Progressive Merge Join Single_thread*/
-                {"PMJ_JM_NP",   PMJ_JM_NP}, /* Progressive Merge Join JM_NP*/
-                {"PMJ_JM_P",    PMJ_JM_P}, /* Progressive Merge Join JM_P*/
-                {"PMJ_JB_NP",   PMJ_JB_NP}, /* Progressive Merge Join JB_NP*/
-                {"PMJ_JBCR_NP", PMJ_JBCR_NP}, /* Progressive Merge Join JBCR_NP*/
-                {"PMJ_JBCR_P",  PMJ_JBCR_P}, /* Progressive Merge Join JBCR_P*/
-                {"PMJ_HS_NP",   PMJ_HS_NP}, /* Progressive Merge Join HS_NP*/
+/***13 ***/                {"PMJ_st",      PMJ_st}, /* Progressive Merge Join Single_thread*/
+/***14 ***/                {"PMJ_JM_NP",   PMJ_JM_NP}, /* Progressive Merge Join JM_NP*/
+/***15 ***/                {"PMJ_JM_P",    PMJ_JM_P}, /* Progressive Merge Join JM_P*/
+/***16 ***/                {"PMJ_JB_NP",   PMJ_JB_NP}, /* Progressive Merge Join JB_NP*/
+/***17 ***/                {"PMJ_JBCR_NP", PMJ_JBCR_NP}, /* Progressive Merge Join JBCR_NP*/
+/***18 ***/                {"PMJ_JBCR_P",  PMJ_JBCR_P}, /* Progressive Merge Join JBCR_P*/
+/***19 ***/                {"PMJ_HS_NP",   PMJ_HS_NP}, /* Progressive Merge Join HS_NP*/
 /*** Ripple Join (unfinished) ***/
-                {"RPJ_st",      RPJ_st}, /* Ripple Join Single_thread*/
-                {"RPJ_JM_NP",   RPJ_JM_NP}, /* Ripple Join JM*/
-                {"RPJ_JB_NP",   RPJ_JB_NP}, /* Ripple Join JB*/
-                {"RPJ_JBCR_NP", RPJ_JBCR_NP}, /* Ripple Join JB*/
-                {"RPJ_HS_NP",   RPJ_HS_NP}, /* Ripple Join HS*/
-                {{0},           0}
+/***20 ***/                {"RPJ_st",      RPJ_st}, /* Ripple Join Single_thread*/
+/***21 ***/                {"RPJ_JM_NP",   RPJ_JM_NP}, /* Ripple Join JM*/
+/***22 ***/                {"RPJ_JB_NP",   RPJ_JB_NP}, /* Ripple Join JB*/
+/***23 ***/                {"RPJ_JBCR_NP", RPJ_JBCR_NP}, /* Ripple Join JB*/
+/***24 ***/                {"RPJ_HS_NP",   RPJ_HS_NP}, /* Ripple Join HS*/
+/***25 ***/                {{0},           0}
         };
 
 param_t defaultParam() {/* Command line parameters */
@@ -344,8 +344,8 @@ param_t defaultParam() {/* Command line parameters */
      * ONLINE SORTING: PMJ_st(11), PMJ_JM_NP, PMJ_JB_NP, PMJ_JBCR_NP, PMJ_HS_NP (15)
      * RIPPLE JOIN: RPJ_st(16), RPJ_JM_NP,  RPJ_JB_NP, RPJ_JBCR_NP, RPJ_HS_NP
      * */
-    cmd_params.algo = &algos[4];
-    cmd_params.nthreads = 1;//TODO: in HS mode, thread must be larger than 1. Fix it when nthread=1.
+    cmd_params.algo = &algos[12];
+    cmd_params.nthreads = 4;//TODO: in HS mode, thread must be larger than 1. Fix it when nthread=1.
     cmd_params.r_seed = 12345;
     cmd_params.s_seed = 54321;
     cmd_params.skew = 0.0;

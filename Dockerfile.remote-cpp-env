@@ -9,7 +9,7 @@
 #   docker stop clion_remote_env
 # 
 # ssh credentials (test user):
-#   user@password 
+#   user@password
 
 FROM ubuntu:20.04
 
@@ -44,7 +44,25 @@ RUN useradd -m user \
 
 RUN usermod -s /bin/bash user
 
-RUN passwd
-RUN password
+# download and mv datasets to exp_dir
+RUN wget https://www.dropbox.com/s/64z4xtpyhhmhojp/datasets.tar.gz
+RUN tar -zvxf datasets.tar.gz
+RUN rm datasets.tar.gz
+RUN mkdir -p /data1/extra
+RUN mv datasets /data1/extra
+
+
+## Create directories on your machine.
+RUN mkdir -p /data1/extra/results/breakdown/partition_buildsort_probemerge_join
+RUN mkdir -p /data1/extra/results/breakdown/partition_only
+RUN mkdir -p /data1/extra/results/breakdown/partition_buildsort_only
+RUN mkdir -p /data1/extra/results/breakdown/partition_buildsort_probemerge_only
+RUN mkdir -p /data1/extra/results/breakdown/allIncludes
+
+RUN mkdir -p /data1/extra/results/figure
+RUN mkdir -p /data1/extra/results/gaps
+RUN mkdir -p /data1/extra/results/latency
+RUN mkdir -p /data1/extra/results/records
+RUN mkdir -p /data1/extra/results/timestamps
 
 CMD ["/usr/sbin/sshd", "-D", "-e", "-f", "/etc/ssh/sshd_config_test_clion"]

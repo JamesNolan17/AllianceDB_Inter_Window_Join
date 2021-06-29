@@ -67,11 +67,11 @@ struct t_param {
 
     t_param(int nthreads) {
         result = 0;
-        joinresult = new result_t();//(result_t *) malloc(sizeof(result_t));
+        joinresult = new result_t();   //(result_t *) malloc(sizeof(result_t));
         attr = new pthread_attr_t();
         barrier = new pthread_barrier_t();
         args = new arg_t[nthreads];
-        tid = new pthread_t[nthreads];
+        tid = new pthread_t[nthreads]; //thread id
         for (auto i = 0; i < nthreads; i++) {
             tid[i] = -1;
         }

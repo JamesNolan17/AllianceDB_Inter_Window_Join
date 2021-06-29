@@ -143,11 +143,11 @@ void *THREAD_TASK_SHUFFLE(void *param) {
     int lock;
 
 #ifdef PROFILE_TOPDOWN
-#ifdef JOIN_THREAD
+    #ifdef JOIN_THREAD
     // do nothing
-#else
+    #else
     return nullptr;
-#endif
+    #endif
 #endif
 
 #ifdef JOIN_RESULT_MATERIALIZE
@@ -274,7 +274,7 @@ void processLeft(arg_t *args, fetch_t *fetch, int64_t *matches,
         DEBUGMSG("TID %d: remove s %d from S-window because of ack.", args->tid,
                  fetch->tuple->key)
 #ifdef JOIN
-        args->joiner->clean(args->tid, fetch->tuple, RIGHT);
+        args->joiner->clean(args->tid, fetch->tuple, RIGHT); //
 #endif
     } else if (fetch->tuple) { // if msg contains a new tuple then
 #ifdef DEBUG
@@ -486,6 +486,7 @@ void *THREAD_TASK_SHUFFLE_HS(void *param) {
     fetcher->fetchStartTime = args->startTS; // set the fetch starting time.
 
     fetch_t *fetchR;
+
     fetch_t *fetchS;
 
     int sizeR = args->fetcher->relR->num_tuples;
@@ -513,13 +514,17 @@ void *THREAD_TASK_SHUFFLE_HS(void *param) {
     BARRIER_ARRIVE(args->barrier, lock)
 #endif
 
+         /*** hard part!!!! CORE Algorithm ***/
     do {
-        // pull left queue.
-        if (args->tid == 0) {
-            fetchR = fetcher->next_tuple(); //
-        } else {
+        // pull left queue if it is the first thread.
+        if (args->tid == 0) { //if it is the first thread
+            fetchR = fetcher->next_tuple(); //then fetch the next tuple
+        }
+        // use shuffler to pull new data
+        else {
             fetchR = shuffler->pull(args->tid, LEFT); // pull itself.
         }
+        //If the tuple being fetched is not empty, increase the counter by 1.
         if (fetchR) {
             fetcher->cntR++;
             if (fetchR->ack) { /* msg is an acknowledgment message */

@@ -165,8 +165,8 @@ SHJ_st(relation_t *relR, relation_t *relS, param_t cmd_params) {
 //1st online algorithm
 result_t *
 SHJ_JM_NP(relation_t *relR, relation_t *relS, param_t cmd_params) {
+
     t_param param(nthreads);
-    initialize(nthreads, param);
     param.fetcher = type_JM_NP_Fetcher;//new JM_NP_Fetcher(nthreads, relR, relS);
     //no shuffler is required for JM mode.
     param.joiner = type_SHJJoiner;//new SHJJoiner();
@@ -201,6 +201,7 @@ SHJ_JM_P(relation_t *relR, relation_t *relS, param_t cmd_params) {
 //2nd online algorithm
 result_t *
 SHJ_JB_NP(relation_t *relR, relation_t *relS, param_t cmd_params) {
+    //OOP, this is the init of a instance
     t_param param(nthreads);
     initialize(nthreads, param);
     param.fetcher = type_JB_NP_Fetcher;//new JB_NP_Fetcher(nthreads, relR, relS);
